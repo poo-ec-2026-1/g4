@@ -1,0 +1,52 @@
+@startuml
+title Diagrama de Classes – gerenciamento de orçamentos
+
+left to right direction
+
+
+abstract class Produto {
+    # tipo: String
+    # material: String
+    # largura: double
+    # altura: double
+   {abstract} # valorMetroQ() : double
+   {abstract} + calcularPreco() : double
+}
+
+class Toldo extends Produto{
+    # valorMetroQ() : double
+    + calcularPreco() : double
+
+}
+
+class Cortina extends Produto{
+    # valorMetroQ() : double
+    + calcularPreco() : double
+
+}
+
+class Orcamento {
+    - nome: String
+    - id: int
+    - produtos : List<Produto>
+    + addProduto(Produto produto)
+    + calcularTotal(): double
+}
+class Vendedor {
+
+    - nome : String
+    - id : int
+    - telefone : String
+    - email : String
+    - percentualComissao : double
+
+    + criarOrcamento() : Orcamento
+    + calcularComissao(valorVenda : double) : double
+}
+
+Orcamento "1" --> "*" Produto
+Vendedor "1" --> "*" Orcamento 
+
+
+
+@enduml
