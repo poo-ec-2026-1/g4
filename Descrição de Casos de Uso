@@ -1,0 +1,28 @@
+## Descrição do Caso de Uso: Cadastrar Cliente
+
+| Campo | Descrição |
+| Nome | Cadastrar Cliente |
+| Ator Principal | Vendedor |
+| Descrição | O vendedor realiza o cadastro de um novo cliente no sistema informando seus dados básicos. |
+| Pré-condições | O vendedor deve estar registrado e logado no sistema. |
+| Pós-condições | O cadastro do cliente é validado e registrado no sistema. |
+| Fluxo Principal | 1. O vendedor solicita a criação de um novo cadastro informando nome, cpf, numero (`cadastrarCliente(nome, cpf, numero)`).
+                    2. O sistema executa a validação interna do documento informado (`validarDocumento()`).
+                    3. O sistema consulta o banco de dados para verificar se o CPF já existe (`consultarCliente(cpf)`).
+                    4. O sistema confirma a disponibilidade do CPF, registra o novo cliente e exibe uma mensagem de confirmação. |
+| Alternativas | 2a. Se a validação do documento falhar (nulo ou com menos de 11 dígitos), o sistema alerta o usuário e solicita a correção (`validarDocumento() == false`).
+                 3a. Se o CPF já estiver cadastrado (não disponível), o sistema informa o vendedor e cancela a operação. |
+
+
+## Descrição do Caso de Uso: Consultar Produto
+
+| Campo | Descrição |
+| Nome | Consultar Produto |
+| Ator Principal | Vendedor |
+| Descrição | O vendedor consulta os detalhes de um produto (toldo ou cortina) cadastrado no sistema para verificar suas especificações e valor base. |
+| Pré-condições | O vendedor deve estar logado no sistema e na tela de listagem de produtos (`Visualizar Produto`). |
+| Pós-condições | As informações detalhadas do produto são exibidas para o vendedor. |
+| Fluxo Principal | 1. O vendedor solicita a consulta de um produto específico na listagem de produtos.
+                    2. O sistema busca no banco de dados os detalhes do produto selecionado (`tipo`, `material`, `cor` e `valorMetroQuadrado`).
+                    3. O sistema apresenta os dados estruturados do produto para o vendedor. |
+| Alternativas | 1a. Se o produto selecionado tiver sido excluído, o sistema informa que o produto não foi encontrado e atualiza a listagem. |
