@@ -1,7 +1,7 @@
 //ESSA É A CLASSE ABSTRATA DOS PRODUTOS
+
 public abstract class Produto {
-    protected double largura;
-    protected double altura;
+    protected double largura, altura, precoM2=0;
 
     public Produto(double largura, double altura) {
         this.largura = largura;
@@ -12,34 +12,37 @@ public abstract class Produto {
         return largura * altura;
     }
 
-    public abstract double calcularPreco();
+    public double calcularPreco(){
+        return this.getArea()*this.precoM2;
+    }
+    public double getLargura(){
+        return this.largura;
+    }
+    public double getAltura(){
+        return this.altura;
+    }
+    public double getPrecoM2(){
+        return this.precoM2;
+    }
 }
 
 //CLASSE PARA OS TOLDOS(NÃO INCLUI CORTINAS)
+
 public class Toldo extends Produto {
 
-    private String material;
-    private String tipo;
-    private String cor;
+    protected String material;
+    protected String tipo;
+    protected String cor;
 
-    public Toldo(double largura, double altura,
-                 String material,
-                 String tipo,
-                 String cor) {
+    public Toldo(double largura, double altura, String material, String tipo, String cor){
 
         super(largura, altura);
         this.material = material;
         this.tipo = tipo;
         this.cor = cor;
-    }
-
-    @Override
-    public double calcularPreco() {
-
-        double precoM2 = 0;
 
         // Material
-        switch (material.toLowerCase()) {
+        switch (material.toLowerCase()){
             case "madeira":
                 precoM2 += 250;
                 break;
@@ -65,30 +68,26 @@ public class Toldo extends Produto {
                 precoM2 += 90;
                 break;
         }
-
-        return getArea() * precoM2;
     }
-
     public String getCor() {
-        return cor;
+        return this.cor;
+    }
+    public String getMaterial(){
+        return this.material;
+    }
+    public String getTipo(){
+        return this.tipo;
     }
 }
 
 //ESSA É A DAS CORTINAS
+
 public class Cortina extends Produto {
-
-    private String tecido;
-
+    protected String tecido;
     public Cortina(double largura, double altura, String tecido) {
         super(largura, altura);
         this.tecido = tecido;
-    }
-
-    @Override
-    public double calcularPreco() {
-
-        double precoM2 = 0;
-
+        
         switch (tecido.toLowerCase()) {
             case "voil":
                 precoM2 = 40;
@@ -102,8 +101,9 @@ public class Cortina extends Produto {
             default:
                 precoM2 = 50;
         }
-
-        return getArea() * precoM2;
+    }
+    public String getTecido(){
+        return this.tecido;
     }
 }
 
@@ -113,6 +113,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Pedido {
+    protected double total=0;
 
     private List<Produto> itens = new ArrayList<>();
 
@@ -122,8 +123,6 @@ public class Pedido {
 
     public double calcularTotal() {
 
-        double total = 0;
-
         for (Produto produto : itens) {
             total += produto.calcularPreco();
         }
@@ -132,37 +131,28 @@ public class Pedido {
     }
 }
 
-//ESSA É UM TESTE, FAVOR, NÃO ALTERAR, AINDA NÃO FUNCIONA
-public class Main {
 
-    public static void main(String[] args) {
+//Classe de teste funcional, exemplificando o funcionamento atual
 
-        Pedido pedido = new Pedido();
+public class Programa{
+    public static void main(String[]args){
+        Pedido pedido1= new Pedido();
 
-        Toldo toldo = new Toldo(
-                4.0,
-                2.5,
-                "madeira",
-                "retratil",
-                "branco"
-        );
+        Toldo toldo1= new Toldo(3,1.7,"aco","retratil","preto");
 
-        Cortina cortina = new Cortina(
-                3.0,
-                2.8,
-                "blackout"
-        );
+        Cortina cortina1= new Cortina(1.8, 1.2, "blackout");
 
-        pedido.adicionarItem(toldo);
-        pedido.adicionarItem(cortina);
+        pedido1.adicionarItem(toldo1);
+        pedido1.adicionarItem(cortina1);
 
-        System.out.println("Preço do toldo: R$ " +
-                toldo.calcularPreco());
+        System.out.println("Configuracoes do toldo:\nLargura: "+toldo1.getLargura()+"  Altura: "+toldo1.getAltura()+
+        "  Preco por m²: "+String.format("%.2f",toldo1.getPrecoM2())+" R$\n");
 
-        System.out.println("Preço da cortina: R$ " +
-                cortina.calcularPreco());
+        System.out.println("Configuracoes da cortina:\nLargura: "+cortina1.getLargura()+"  Altura: "+cortina1.getAltura()+
+        "  Preco por m²: "+String.format("%.2f",cortina1.getPrecoM2())+" R$\n");
 
-        System.out.println("Total do pedido: R$ " +
-                pedido.calcularTotal());
+        System.out.println("Preco do toldo: "+String.format("%.2f",toldo1.calcularPreco())+
+        "R$\nPreco da cortina: "+String.format("%.2f",cortina1.calcularPreco())+"R$\n\nTotal do pedido: "
+        +String.format("%.2f",pedido1.calcularTotal())+"R$\n");
     }
 }
