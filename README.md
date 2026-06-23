@@ -1,5 +1,5 @@
 # g4
-### Sistema de Gestão de Orçamento — Documento de Escopo e Planejamento
+## Sistema de Gestão de Orçamento — Documento de Escopo e Planejamento
 
 ## Membros 
 - Amanda - Amanda8709
@@ -36,10 +36,188 @@ Planejar, modelar e iniciar o desenvolvimento de um sistema desktop para automa�
 
 **Segurança da Informação e LGPD:** Blindar o tráfego e armazenamento das strings de dados pessoais sensíveis dos clientes coletados no sistema.
 
+## Seção 3 - Divisão de Tarefas
 
+### Tarefas (Issues)
+O projeto foi dividido em tarefas menores (Issues) dentro do GitHub para facilitar o desenvolvimento incremental e garantir o acompanhamento visual do progresso. Nesta Etapa 1, as principais tarefas mapeadas foram:
+* **Configuração do Escopo:** Levantamento das justificativas, problemas e motivações do sistema de orçamento.
+* **Modelagem UML Inicial:** Construção dos diagramas de classes e de sequência.
+* **Implementação do Core:** Desenvolvimento das classes de domínio (`Produto`, `Toldo`, `Cortina` e `Pedido`) em Java.
+* **Validação e Teste de Mesa:** Execução do fluxo através da classe `Programa` para garantir a precisão dos cálculos e ausência de bugs.
 
+### Papéis e Responsabilidades
+A equipe distribuiu as competências técnicas de acordo com os perfis de domínio para maximizar a eficiência no ecossistema Java/JavaFX:
 
+* **Amanda da Silva Barros (Líder do Projeto):** Gestão do cronograma, refinamento do escopo com base nos requisitos e validação do projeto.
+* **Rafaella Modanez (Arquiteto de Software):** Desenho da arquitetura estrutural do sistema, mapeamento dos diagramas UML e garantia de conformidade no código.
+* **Dalila Rocha Parente (Desenvolvedora Backend):** Implementação do código, estruturação lógica dos construtores condicionais e desenvolvimento dos algoritmos matemáticos de precificação.
+* **Isabela Martins Albuquerque (Desenvolvedora Frontend):** Planejamento dos protótipos visuais e preparação do ecossistema JavaFX.
+* **Daniel Teixeira da Silva (Engenheiro de QA):** Escrita dos cenários de teste funcionais e validação dos fluxos principais.
 
+## Seção 4 - Modelagem inicial
 
+### Diagrama de Classes - V1
 
+<img width="1032" height="610" alt="image" src="https://github.com/user-attachments/assets/e9049851-9a8c-4867-8e97-dcc1bca6f1db" />
 
+```plantuml
+@startuml
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+
+abstract class Produto {
+    # largura : double
+    # altura : double
+    # precoM2 : double
+    + Produto(largura : double, altura : double)
+    + getArea() : double
+    + calcularPreco() : double
+    + getLargura() : double
+    + getAltura() : double
+    + getPrecoM2() : double
+}
+
+class Toldo {
+    # material : String
+    # tipo : String
+    # cor : String
+    + Toldo(largura: double, altura: double, material: String, tipo: String, cor: String)
+    + getCor() : String
+    + getMaterial() : String
+    + getTipo() : String
+}
+
+class Cortina {
+    # tecido : String
+    + Cortina(largura: double, altura: double, tecido: String)
+    + getTecido() : String
+}
+
+class Pedido {
+    # total : double
+    - itens : List<Produto>
+    + adicionarItem(produto : Produto) : void
+    + calcularTotal() : double
+}
+
+Produto <|-- Toldo
+Produto <|-- Cortina
+Pedido "1" o-- "*" Produto
+@enduml
+```
+
+### Diagrama de Sequência - V1
+
+<img width="879" height="1225" alt="image" src="https://github.com/user-attachments/assets/c9f29339-2436-4643-86c5-c3ec29761668" />
+
+```plantuml
+@startuml
+skinparam monochrome true
+skinparam classAttributeIconSize 0
+
+participant "Programa" as Main
+participant "pedido1:Pedido" as Pedido
+participant "toldo1:Toldo" as Toldo
+participant "cortina1:Cortina" as Cortina
+participant "produto:Produto" as Produto
+
+activate Main
+
+' 1. Criação genérica dos objetos
+create Pedido
+Main -> Pedido : new Pedido()
+
+create Toldo
+Main -> Toldo : new Toldo(largura, altura, material, tipo, cor)
+activate Toldo
+    note over Toldo : Construtor avalia as variáveis\n'material' e 'tipo' via switch\ne incrementa precoM2
+deactivate Toldo
+
+create Cortina
+Main -> Cortina : new Cortina(largura, altura, tecido)
+activate Cortina
+    note over Cortina : Construtor avalia a variável\n'tecido' via switch\ne define precoM2
+deactivate Cortina
+
+' 2. Adição genérica dos itens à lista
+Main -> Pedido : adicionarItem(toldo1)
+activate Pedido
+    note over Pedido : itens.add(produto)
+deactivate Pedido
+
+Main -> Pedido : adicionarItem(cortina1)
+activate Pedido
+    note over Pedido : itens.add(produto)
+deactivate Pedido
+
+' 3. Consultas genéricas de atributos (Gets)
+Main -> Toldo : getLargura()
+Main -> Toldo : getAltura()
+Main -> Toldo : getPrecoM2()
+
+Main -> Cortina : getLargura()
+Main -> Cortina : getAltura()
+Main -> Cortina : getPrecoM2()
+
+' 4. Cálculos individuais de preços
+Main -> Toldo : calcularPreco()
+activate Toldo
+    Toldo -> Toldo : getArea()
+    note over Toldo : return largura * altura
+    Toldo --> Main : area * precoM2
+deactivate Toldo
+
+Main -> Cortina : calcularPreco()
+activate Cortina
+    Cortina -> Cortina : getArea()
+    note over Cortina : return largura * altura
+    Cortina --> Main : area * precoM2
+deactivate Cortina
+
+' 5. Processamento do cálculo total acumulado do pedido
+Main -> Pedido : calcularTotal()
+activate Pedido
+    
+    Pedido -> Produto : *[para cada produto]: calcularPreco()
+    activate Produto
+        Produto -> Produto : getArea()
+        Produto --> Pedido : subtotal
+    deactivate Produto
+    
+    note over Pedido : total += subtotal
+    
+    Pedido --> Main : total
+deactivate Pedido
+
+' O fluxo apenas termina com a saída de dados gerada no console
+note over Main : System.out.println() exibe os\nresultados finais calculados no console
+
+@enduml
+```
+
+### Diagrama de Caso de Uso - V1
+
+#### Caso de Uso - Calcular Total do Pedido
+
+| Campo | Descrição |
+| :--- | :--- |
+| **Nome** | calcularTotalPedido |
+| **Ator Principal** | Sistema (Classe Programa) |
+| **Descrição** | O sistema percorre todos os produtos vinculados ao pedido para consolidar o valor final acumulado. |
+| **Pré-condições** | O objeto `Pedido` deve conter as instâncias de produtos adicionadas à sua lista interna `itens`. |
+| **Pós-condições** | O valor total acumulado do pedido é retornado. |
+| **Fluxo Principal** | 1. O sistema invoca o método `calcularTotal()` da classe `Pedido`. <br>2. O sistema inicia um laço de repetição `for` para percorrer a lista `itens`. <br>3. Para cada objeto contido na lista, o método `calcularPreco()` é acionado. <br>4. O valor retornado de cada item é somado diretamente à variável acumuladora `total`. <br>5. O laço se encerra e o método retorna o valor contido em `total`. |
+| **Alternativas** | 2a. Se a lista de itens estiver vazia, o laço de repetição não é executado e o método retorna o valor inicial zero (`0`). |
+
+## Seção 5 - Evoluções Futuras e Próximos Passos (Planejamento V2)
+
+Para as próximas etapas de desenvolvimento do **Sistema de Gestão de Orçamento**, o ecossistema atual — focado em regras de negócio básicas no console — será expandido para incorporar a infraestrutura completa de software planejada na Seção 2.
+
+### 1. Evolução do Modelo de Domínio (Novas Classes)
+A arquitetura orientada a objetos receberá novas entidades para viabilizar a rastreabilidade e a persistência de dados comerciais:
+* **Classe `Cliente`:** Responsável por encapsular dados do comprador, contendo atributos como `nome`, `documento` (CPF/CNPJ) e métodos de validação estrutural baseados na LGPD.
+* **Classe `Vendedor`:** Representará o operador do sistema, responsável por associar o funcionário ao orçamento criado para fins de auditoria e cálculo de desempenho.
+* **Classe `Orcamento`:** Substituirá a classe temporária `Pedido`, agregando um motor de estados dinâmico (`Em Análise`, `Aprovado`, `Recusado`, `Cancelado`) para controlar o ciclo de vida comercial da venda.
+
+### 2. Implementação da Interface Gráfica (JavaFX)
+A classe `Programa` (execução via console) será descontinuada para dar lugar a uma aplicação Desktop construída sobre o ecossistema **JavaFX**. O fluxo visual será mapeado conforme as diretrizes de usabilidade e inclusão, distribuindo-se nos componentes a serem definidos.
