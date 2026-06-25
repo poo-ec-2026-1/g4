@@ -218,6 +218,23 @@ public class Orcamento {
     }
 }
 
+//BANCO DE DADOS (TO USANDO SQLite) - ainda não tá pronto
+package database;
+
+import java.sql.*;
+
+public class ConnectionFactory {
+
+    private static final String URL =
+            "jdbc:sqlite:orcamentos.db";
+
+    public static Connection getConnection()
+            throws SQLException {
+
+        return DriverManager.getConnection(URL);
+    }
+}
+
 ///VERSÃO 1 
 //ESSA É A CLASSE ABSTRATA DOS PRODUTOS
 
