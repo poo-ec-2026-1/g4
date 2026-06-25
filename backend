@@ -113,15 +113,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Pedido {
-    protected double total=0;
-
+    private Cliente cliente;
     private List<Produto> itens = new ArrayList<>();
+    
+    Pedido(Cliente cliente){
+        this.cliente=cliente;
+    }
 
     public void adicionarItem(Produto produto) {
         itens.add(produto);
     }
 
     public double calcularTotal() {
+        double total=0;
 
         for (Produto produto : itens) {
             total += produto.calcularPreco();
@@ -129,30 +133,79 @@ public class Pedido {
 
         return total;
     }
+    public Cliente getCliente(){
+        return this.cliente;
+    }
 }
 
+
+
+//Classe de Cliente
+
+public class Cliente{
+    protected String nome, documento;
+    Cliente(String nome, String documento){
+        String limpo=documento.replaceAll("[^0-9]","");
+        if(limpo.length() !=11 && limpo.length() !=14){
+            throw new IllegalArgumentException("Dimensoes do documento nao aceitas");
+        }
+        this.nome=nome;
+        this.documento=limpo;
+    }
+    public String getNome(){
+        return this.nome;
+    }
+    public String getDocumento(){
+        return this.documento;
+    }
+}
+
+//Verificador para disponibilidade do documento
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Verificador{
+    private List<Cliente>clientCadas=new ArrayList<>();
+    boolean adicionarCliente(Cliente novoCliente){
+        for(Cliente a: clientCadas){
+            if(a.getDocumento().equals(novoCliente.getDocumento())){
+                System.out.println("Cadastro negado, documento ja cadastrado!");
+                return false;
+            }
+        }
+        clientCadas.add(novoCliente);
+        System.out.println("Cliente cadastrado com sucesso!");
+        return true;
+    }
+}
 
 //Classe de teste funcional, exemplificando o funcionamento atual
 
 public class Programa{
     public static void main(String[]args){
-        Pedido pedido1= new Pedido();
-
-        Toldo toldo1= new Toldo(3,1.7,"aco","retratil","preto");
-
-        Cortina cortina1= new Cortina(1.8, 1.2, "blackout");
-
-        pedido1.adicionarItem(toldo1);
-        pedido1.adicionarItem(cortina1);
-
-        System.out.println("Configuracoes do toldo:\nLargura: "+toldo1.getLargura()+"  Altura: "+toldo1.getAltura()+
-        "  Preco por m²: "+String.format("%.2f",toldo1.getPrecoM2())+" R$\n");
-
-        System.out.println("Configuracoes da cortina:\nLargura: "+cortina1.getLargura()+"  Altura: "+cortina1.getAltura()+
-        "  Preco por m²: "+String.format("%.2f",cortina1.getPrecoM2())+" R$\n");
-
-        System.out.println("Preco do toldo: "+String.format("%.2f",toldo1.calcularPreco())+
-        "R$\nPreco da cortina: "+String.format("%.2f",cortina1.calcularPreco())+"R$\n\nTotal do pedido: "
-        +String.format("%.2f",pedido1.calcularTotal())+"R$\n");
+        Verificador verificador1= new Verificador();
+        try{
+            //Clientes
+            Cliente cliente1= new Cliente("Fulano da Silva", "123.456.123-45");
+            Cliente cliente2= new Cliente("Beltrano Encomendas", "12.345.678/0001-99");
+            //Cadastro
+            System.out.println("--- Tentativas de Cadastro ---\n");
+            verificador1.adicionarCliente(cliente1);
+            verificador1.adicionarCliente(cliente2);
+            //Criacao de pedido
+            Pedido pedido1=new Pedido(cliente1);
+            Toldo toldo1= new Toldo(3,1.7,"aco", "retratil", "preto");
+            pedido1.adicionarItem(toldo1);
+            System.out.println("\nPedido feito para: "+pedido1.getCliente().getNome()+
+            "\nTotal: "+String.format("%.2f", pedido1.calcularTotal())+" R$\n");
+            //Exemplos de erros
+            Cliente cliente3= new Cliente("Ciclano dos Santos", "123.456.123-45");
+            verificador1.adicionarCliente(cliente3);
+            Cliente cliente4= new Cliente("Jose Fonseca", "123");
+        }
+        catch(IllegalArgumentException a){
+            System.out.println("Alerta: "+a.getMessage());
+        }
     }
 }
