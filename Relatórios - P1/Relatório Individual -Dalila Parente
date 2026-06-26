@@ -1,0 +1,19 @@
+Relatório Individual – Dalila Rocha Parente
+
+1. Atribuição de Cargo e Tarefas
+Atuei como Desenvolvedora Backend do projeto, sendo responsável pelo desenvolvimento das classes de negócio do sistema e pela modelagem inicial da camada de persistência de dados, além do banco de dados. 
+Minhas tarefas envolveram a implementação das entidades principais da aplicação, a evolução da arquitetura orientada a objetos e a preparação da integração com banco de dados SQLite para as próximas etapas do projeto.
+
+2. Contribuição de Acordo com a Atribuição
+Minha contribuição concentrou-se no desenvolvimento e evolução do backend da aplicação. Participei da implementação das primeiras versões das classes responsáveis pelo gerenciamento dos produtos comercializados pela empresa, incluindo a criação da classe abstrata Produto e suas especializações Toldo e Cortina, responsáveis pelo cálculo automatizado dos preços com base nas características selecionadas pelo usuário.
+Além disso, participei da evolução da modelagem do sistema, substituindo a classe Pedido pela classe Orcamento, adequando a estrutura ao novo diagrama de classes definido para a V2 do backend e a interface Validavel, adaptei a classe Cliente para utilizar esse mecanismo de validação, tornando a arquitetura mais flexível e alinhada aos princípios da Programação Orientada a Objetos. Também preparação da camada de persistência de dados, por meio da criação da estrutura inicial de conexão com banco de dados SQLite utilizando JDBC. 
+Essa etapa servirá de base para a implementação futura das operações de cadastro, consulta e armazenamento permanente das informações do sistema.
+
+Commits realizados:
+* Commit 1: Desenvolvimento da estrutura principal do backend, incluindo as classes Produto, Toldo, Cortina, Cliente, Pedido e Verificador, e o esboço das regras de cálculo de preços e validação de documentos.
+* Commit 2: Refatoração da arquitetura do sistema, substituindo a classe Pedido pela classe Orcamento e adicionando a interface Validavel para aprimorar a organização e reutilização do código.
+* Commit 3: Implementação inicial da configuração da conexão ao banco de dados SQLite através da classe ConnectionFactory e preparação da estrutura para integração futura com JDBC.
+
+3. Considerações Gerais
+Durante esta etapa do projeto, tive a oportunidade de aplicar diversos conceitos de Programação Orientada a Objetos estudados em aula, como abstração, herança, encapsulamento, polimorfismo e utilização de interfaces, pude aprofundar meus conhecimentos sobre modelagem de sistemas e integração entre backend e banco de dados.
+Como próximos passos, será necessária a finalização da camada de persistência, com implementação dos DAOs e operações CRUD, além da integração do backend com a interface gráfica em JavaFX. Considero que a estrutura desenvolvida até o momento fornece uma base sólida para a continuidade do projeto e para a implementação dos últimos ajustes do projeto.

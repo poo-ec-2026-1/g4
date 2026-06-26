@@ -1,3 +1,241 @@
+//INTERFACE
+package interfaces;
+
+public interface Validavel {
+
+    boolean validar();
+}
+
+//CLIENTES
+package model;
+
+import interfaces.Validavel;
+
+public class Cliente implements Validavel {
+
+    private Integer id;
+    private String nome;
+    private String documento;
+
+    public Cliente(String nome,
+                   String documento) {
+
+        this.nome = nome;
+
+        this.documento =
+                documento.replaceAll("[^0-9]", "");
+    }
+
+    @Override
+    public boolean validar() {
+
+        return documento.length() == 11
+                || documento.length() == 14;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public String getDocumento() {
+        return documento;
+    }
+}
+
+// PRODUTOS
+package model;
+
+public abstract class Produto {
+
+    protected double largura;
+    protected double altura;
+    protected double precoM2;
+
+    public Produto(double largura,
+                   double altura) {
+
+        this.largura = largura;
+        this.altura = altura;
+    }
+
+    public double getArea() {
+
+        return largura * altura;
+    }
+
+    public double calcularPreco() {
+
+        return getArea() * precoM2;
+    }
+
+    public double getLargura() {
+        return largura;
+    }
+
+    public double getAltura() {
+        return altura;
+    }
+
+    public double getPrecoM2() {
+        return precoM2;
+    }
+}
+
+//TOLDO
+package model;
+
+public class Toldo extends Produto {
+
+    private String material;
+    private String tipo;
+    private String cor;
+
+    public Toldo(double largura,
+                 double altura,
+                 String material,
+                 String tipo,
+                 String cor) {
+
+        super(largura, altura);
+
+        this.material = material;
+        this.tipo = tipo;
+        this.cor = cor;
+
+        switch(material.toLowerCase()) {
+
+            case "madeira":
+                precoM2 += 250;
+                break;
+
+            case "aluminio":
+                precoM2 += 180;
+                break;
+
+            case "aco":
+                precoM2 += 220;
+                break;
+
+            default:
+                precoM2 += 150;
+        }
+
+        switch(tipo.toLowerCase()) {
+
+            case "retratil":
+                precoM2 += 120;
+                break;
+
+            case "reto":
+                precoM2 += 50;
+                break;
+
+            case "curvo":
+                precoM2 += 90;
+                break;
+        }
+    }
+}
+
+//CORTINA
+package model;
+
+public class Cortina extends Produto {
+
+    private String tecido;
+
+    public Cortina(double largura,
+                   double altura,
+                   String tecido) {
+
+        super(largura, altura);
+
+        this.tecido = tecido;
+
+        switch(tecido.toLowerCase()) {
+
+            case "voil":
+                precoM2 = 40;
+                break;
+
+            case "linho":
+                precoM2 = 70;
+                break;
+
+            case "blackout":
+                precoM2 = 90;
+                break;
+
+            default:
+                precoM2 = 50;
+        }
+    }
+}
+
+//ORÇAMENTO (ESSA EU SUBSTITUI A CLASSE PEDIDO POR ELA)
+package model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Orcamento {
+
+    private Integer id;
+    private String nome;
+
+    private List<Produto> produtos =
+            new ArrayList<>();
+
+    public Orcamento(String nome) {
+
+        this.nome = nome;
+    }
+
+    public void addProduto(
+            Produto produto) {
+
+        produtos.add(produto);
+    }
+
+    public double calcularTotal() {
+
+        double total = 0;
+
+        for(Produto p : produtos) {
+
+            total += p.calcularPreco();
+        }
+
+        return total;
+    }
+}
+
+//BANCO DE DADOS (TO USANDO SQLite) - ainda não tá pronto
+package database;
+
+import java.sql.*;
+
+public class ConnectionFactory {
+
+    private static final String URL =
+            "jdbc:sqlite:orcamentos.db";
+
+    public static Connection getConnection()
+            throws SQLException {
+
+        return DriverManager.getConnection(URL);
+    }
+}
+
+///VERSÃO 1 
 //ESSA É A CLASSE ABSTRATA DOS PRODUTOS
 
 public abstract class Produto {
@@ -137,8 +375,6 @@ public class Pedido {
         return this.cliente;
     }
 }
-
-
 
 //Classe de Cliente
 
