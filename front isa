@@ -1,0 +1,337 @@
+CLASSE TELA INICIAL:
+
+
+import javafx.application.Application;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+public class TelaPrincipal extends Application {
+
+    @Override
+    public void start(Stage stage) {
+
+        Label titulo = new Label("Venda de Toldos e Cortinas");
+
+        Button btnToldo = new Button("Cadastrar Toldo");
+        Button btnCortina = new Button("Cadastrar Cortina");
+        Button btnPedido = new Button("Visualizar Pedido");
+        Button btnSair
+
+        //botoes:
+        
+         btnToldo.setOnAction(e -> {
+            
+            System.out.println("Abrir tela toldos");
+            
+        });
+
+        btnCortina.setOnAction(e -> {
+            
+            System.out.println("Abrir tela cortinas");
+            
+        });
+
+        btnPedido.setOnAction(e -> {
+            
+            System.out.println("Abrir tela pedido");
+        
+        });
+
+        btnSair.setOnAction(e -> {
+
+            stage.close();
+        });
+
+        VBox layout = new VBox(15);
+        
+        layout.getChildren().addAll(
+                titulo,
+                btnToldo,
+                btnCortina,
+                btnPedido,
+                btnSair
+        );
+
+        layout.setAlignment(Pos.CENTER);
+
+        Scene scene = new Scene(layout, 400, 300);
+
+        stage.setTitle("Venda de Toldos e Cortinas");
+        
+        stage.setScene(scene);
+        
+        stage.show();
+    }
+
+    public static void main(String[] args) {
+        
+        launch(args);
+        
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+CLASSE TELA TOLDO
+
+
+
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+
+public class TelaToldo extends Application {
+
+
+
+  @Override
+    public void start(Stage stage) {
+
+
+      TextField txtLargura = new TextField();
+      TextField txtAltura = new TextField();
+
+      TextField txtMaterial = new TextField();
+      TextField txtTipo = new TextField();
+      TextField txtCor = new TextField();
+
+
+
+     Button btnCadastrar = new Button("Cadastrar");
+     
+     Button btnVoltar = new Button("Voltar");
+
+
+     TableView<Toldo> tabela = new TableView<>();
+
+
+     TableColumn<Toldo, Double> colLargura =
+
+        new TableColumn<>("Largura");
+
+
+     TableColumn<Toldo, Double> colAltura =
+
+        new TableColumn<>("Altura");
+
+
+     TableColumn<Toldo, String> colMaterial =
+
+        new TableColumn<>("Material");
+
+     TableColumn<Toldo, String> colTipo =
+
+        new TableColumn<>("Tipo");
+
+
+     TableColumn<Toldo, String> colCor =
+
+        new TableColumn<>("Cor");
+
+
+
+     tabela.getColumns().addAll(
+
+        colLargura,
+        colAltura,
+        colMaterial,
+        colTipo,
+        colCor
+);
+
+
+      VBox layout = new VBox(
+
+         colLargura,
+         txtAltura,
+         txtMaterial,
+         txtTipo,
+         txtCor,
+         btnCadastrar,
+         tabela,
+         btnVoltar
+
+        );
+
+        Scene scene = new Scene(layout, 600, 400);
+
+        stage.setScene(scene);
+        stage.setTitle("Cadastro de Toldos");
+        stage.show();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+CLASSE TELA CORTINA
+
+
+
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+public class telaCortina extends Application {
+
+    @Override
+    public void start(Stage stage) {
+
+        TextField txtLargura = new TextField();
+        TextField txtAltura = new TextField();
+
+        TextField txtTecido = new TextField();
+
+
+        Button btnCadastrar = new Button("Cadastrar");
+        Button btnVoltar = new Button("Voltar");
+
+        TableView<Cortina> tabela = new TableView<>();
+
+        TableColumn<Cortina, Double> colLargura =
+                new TableColumn<>("Largura");
+
+        TableColumn<Cortina, Double> colAltura =
+                new TableColumn<>("Altura");
+
+        TableColumn<Cortina, String> colTecido =
+                new TableColumn<>("Tecido");
+
+
+
+        tabela.getColumns().addAll(
+                colLargura,
+                colAltura,
+                colTecido
+        );
+
+        VBox layout = new VBox(
+                txtLargura,
+                txtAltura,
+                txtTecido,
+                btnCadastrar,
+                tabela,
+                btnVoltar
+        );
+
+        Scene scene = new Scene(layout, 600, 400);
+
+        stage.setScene(scene);
+        stage.setTitle("Cadastro de Cortinas");
+        stage.show();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+CLASSE TELA PEDIDOS
+
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+public class TelaPedido extends Application {
+
+    private Pedido pedido = new Pedido();
+
+    @Override
+    public void start(Stage stage) {
+
+        Button btnVoltar = new Button("Voltar");
+        Button btnTotal = new Button("Calcular Total");
+
+        Label lblTotal = new Label("Total: R$ 0.00");
+
+        TableView<Produto> tabela = new TableView<>();
+
+        TableColumn<Produto, String> colTipo = new TableColumn<>("Tipo");
+
+        TableColumn<Produto, Double> colArea = new TableColumn<>("Área");
+
+        TableColumn<Produto, Double> colPreco = new TableColumn<>("Preço");
+
+        tabela.getColumns().addAll(
+                colTipo,
+                colArea,
+                colPreco
+        );
+
+        btnTotal.setOnAction(e -> {
+
+            double total = pedido.calcularTotal();
+
+            lblTotal.setText("Total: R$ " + String.format("%.2f", total));
+
+        });
+
+        btnVoltar.setOnAction(e -> {
+
+            System.out.println("Voltar para Tela Principal");
+
+        });
+
+        VBox layout = new VBox(
+                10,
+                tabela,
+                btnTotal,
+                lblTotal,
+                btnVoltar
+        );
+
+        Scene scene = new Scene(layout, 600, 400);
+
+        stage.setTitle("Pedidos");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
