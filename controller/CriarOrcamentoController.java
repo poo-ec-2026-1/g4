@@ -55,7 +55,7 @@ public class CriarOrcamentoController {
         }
 
         FXMLLoader loader = new FXMLLoader(
-                getClass().getResource("/GUI/FormularioOrcamento.fxml"));
+                getClass().getResource("/view/FormularioOrcamento.fxml"));
 
         Parent root = loader.load();
 
