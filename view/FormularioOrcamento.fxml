@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml/1"
+            xmlns="http://javafx.com/javafx/21"
+            fx:controller="controller.FormularioOrcamentoController">
+
+    <!-- TOPO -->
+    <top>
+        <VBox alignment="CENTER"
+              spacing="10"
+              style="-fx-background-color:#233142;">
+
+            <padding>
+                <Insets top="20" bottom="20"/>
+            </padding>
+
+            <Label text="Formulário do Orçamento"
+                   style="-fx-font-size:24px;
+                          -fx-text-fill:white;
+                          -fx-font-weight:bold;"/>
+
+        </VBox>
+    </top>
+
+    <!-- MEIO (onde entram os formulários dinâmicos) -->
+    <center>
+
+        <VBox fx:id="containerProdutos"
+              spacing="15"
+              style="-fx-background-color:#f5f5f5;">
+
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+        </VBox>
+
+    </center>
+
+    <!-- BOTÃO FINAL -->
+    <bottom>
+
+        <VBox alignment="CENTER"
+              spacing="10"
+              style="-fx-background-color:#f5f5f5;">
+
+            <padding>
+                <Insets top="15" bottom="20"/>
+            </padding>
+
+            <Button text="Finalizar Orçamento"
+                    onAction="#finalizarOrcamento"
+                    prefWidth="200"
+                    style="-fx-background-color:#233142;
+                           -fx-text-fill:white;
+                           -fx-font-size:16px;"/>
+
+        </VBox>
+
+    </bottom>
+
+</BorderPane>
