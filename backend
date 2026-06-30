@@ -1,16 +1,10 @@
 //INTERFACE
-package interfaces;
-
 public interface Validavel {
 
     boolean validar();
 }
 
 //CLIENTES
-package model;
-
-import interfaces.Validavel;
-
 public class Cliente implements Validavel {
 
     private Integer id;
@@ -22,8 +16,11 @@ public class Cliente implements Validavel {
 
         this.nome = nome;
 
-        this.documento =
-                documento.replaceAll("[^0-9]", "");
+        this.documento = documento.replaceAll("[^0-9]", "");
+        
+        if(!validar()){
+            throw new IllegalArgumentException("Documento invalido, deve conter 11 (cpf) ou 14 (cnpj) digitos");
+        }
     }
 
     @Override
@@ -51,8 +48,6 @@ public class Cliente implements Validavel {
 }
 
 // PRODUTOS
-package model;
-
 public abstract class Produto {
 
     protected double largura;
@@ -73,25 +68,23 @@ public abstract class Produto {
 
     public double calcularPreco() {
 
-        return getArea() * precoM2;
+        return getArea() * this.precoM2;
     }
 
     public double getLargura() {
-        return largura;
+        return this.largura;
     }
 
     public double getAltura() {
-        return altura;
+        return this.altura;
     }
 
     public double getPrecoM2() {
-        return precoM2;
+        return this.precoM2;
     }
 }
 
 //TOLDO
-package model;
-
 public class Toldo extends Produto {
 
     private String material;
@@ -146,11 +139,9 @@ public class Toldo extends Produto {
 }
 
 //CORTINA
-package model;
-
 public class Cortina extends Produto {
 
-    private String tecido;
+    protected String tecido;
 
     public Cortina(double largura,
                    double altura,
@@ -178,31 +169,32 @@ public class Cortina extends Produto {
                 precoM2 = 50;
         }
     }
+    public String getTecido(){
+        return this.tecido;
+    }
 }
 
-//ORÇAMENTO (ESSA EU SUBSTITUI A CLASSE PEDIDO POR ELA)
-package model;
-
+//ORÇAMENTO
 import java.util.ArrayList;
 import java.util.List;
 
 public class Orcamento {
 
     private Integer id;
-    private String nome;
+    private Cliente cliente;
 
     private List<Produto> produtos =
             new ArrayList<>();
 
-    public Orcamento(String nome) {
+    public Orcamento(Cliente cliente) {
 
-        this.nome = nome;
+        this.cliente = cliente;
     }
 
     public void addProduto(
             Produto produto) {
 
-        produtos.add(produto);
+        this.produtos.add(produto);
     }
 
     public double calcularTotal() {
@@ -215,6 +207,68 @@ public class Orcamento {
         }
 
         return total;
+    }
+    public Cliente getCliente(){
+        return this.cliente;
+    }
+    public int getTotalProdutos(){
+        return this.produtos.size();
+    }
+}
+
+//Verificador
+import java.util.ArrayList;
+import java.util.List;
+
+public class VerificadorCadastro {
+    private List<Cliente> clientesCadastrados = new ArrayList<>();
+    
+    public boolean adicionarCliente(Cliente novoCliente) {
+        for (Cliente a : clientesCadastrados) {
+            if (a.getDocumento().equals(novoCliente.getDocumento())) {
+                System.out.println("Cadastro negado: documento ja cadastrado");
+                return false;
+            }
+        }
+        clientesCadastrados.add(novoCliente);
+        System.out.println("Cliente - " + novoCliente.getNome() + " - cadastrado com sucesso");
+        return true;
+    }
+}
+
+//Classe de Teste main
+public class Teste{
+    public static void main(String[]args){
+        System.out.println("--- Testes de funcionamento ---\n");
+        VerificadorCadastro verificador1= new VerificadorCadastro();
+        //adicao de clientes
+        System.out.println("--- Adicao de Clientes ---\n");
+        Cliente cliente1= new Cliente("Fulano da Silva", "123.456.789-10");
+        Cliente cliente2= new Cliente("Ciclano dos Santos", "12345678910");
+        Cliente cliente3= new Cliente("GynSOL", "12.345.678/0001-90");
+        //verificacao de clientes
+        System.out.println("--- Verificacao dos Clientes ---\n");
+        verificador1.adicionarCliente(cliente1);
+        verificador1.adicionarCliente(cliente2);
+        verificador1.adicionarCliente(cliente3);
+        //adicao de produtos
+        System.out.println("--- Adicao de Produtos ---\n");
+        Cortina cortina1= new Cortina(2, 2.5, "linho");
+        Toldo toldo1= new Toldo(3, 2, "aluminio", "retratil", "branco");
+        //criacao dos orcamentos
+        System.out.println("--- Geracao dos Orcamentos ---\n");
+        Orcamento orcamentoCliente1= new Orcamento(cliente1);
+        Orcamento orcamentoCliente3= new Orcamento(cliente3);
+        orcamentoCliente1.addProduto(cortina1);
+        orcamentoCliente1.addProduto(toldo1);
+        orcamentoCliente3.addProduto(cortina1);
+        //resultado final
+        System.out.println("Orcamento feito para: "+orcamentoCliente1.getCliente().getNome());
+        System.out.println("Quantidade de itens: "+orcamentoCliente1.getTotalProdutos());
+        System.out.println("Valor total do orcamento: "+String.format("%.2f",orcamentoCliente1.calcularTotal())+"R$\n");
+        System.out.println("Orcamento feito para: "+orcamentoCliente3.getCliente().getNome());
+        System.out.println("Quantidade de itens: "+orcamentoCliente3.getTotalProdutos());
+        System.out.println("Valor total do orcamento: "+String.format("%.2f",orcamentoCliente3.calcularTotal())+"R$");
     }
 }
 
@@ -232,216 +286,5 @@ public class ConnectionFactory {
             throws SQLException {
 
         return DriverManager.getConnection(URL);
-    }
-}
-
-///VERSÃO 1 
-//ESSA É A CLASSE ABSTRATA DOS PRODUTOS
-
-public abstract class Produto {
-    protected double largura, altura, precoM2=0;
-
-    public Produto(double largura, double altura) {
-        this.largura = largura;
-        this.altura = altura;
-    }
-
-    public double getArea() {
-        return largura * altura;
-    }
-
-    public double calcularPreco(){
-        return this.getArea()*this.precoM2;
-    }
-    public double getLargura(){
-        return this.largura;
-    }
-    public double getAltura(){
-        return this.altura;
-    }
-    public double getPrecoM2(){
-        return this.precoM2;
-    }
-}
-
-//CLASSE PARA OS TOLDOS(NÃO INCLUI CORTINAS)
-
-public class Toldo extends Produto {
-
-    protected String material;
-    protected String tipo;
-    protected String cor;
-
-    public Toldo(double largura, double altura, String material, String tipo, String cor){
-
-        super(largura, altura);
-        this.material = material;
-        this.tipo = tipo;
-        this.cor = cor;
-
-        // Material
-        switch (material.toLowerCase()){
-            case "madeira":
-                precoM2 += 250;
-                break;
-            case "aluminio":
-                precoM2 += 180;
-                break;
-            case "aco":
-                precoM2 += 220;
-                break;
-            default:
-                precoM2 += 150;
-        }
-
-        // Tipo
-        switch (tipo.toLowerCase()) {
-            case "retratil":
-                precoM2 += 120;
-                break;
-            case "reto":
-                precoM2 += 50;
-                break;
-            case "curvo":
-                precoM2 += 90;
-                break;
-        }
-    }
-    public String getCor() {
-        return this.cor;
-    }
-    public String getMaterial(){
-        return this.material;
-    }
-    public String getTipo(){
-        return this.tipo;
-    }
-}
-
-//ESSA É A DAS CORTINAS
-
-public class Cortina extends Produto {
-    protected String tecido;
-    public Cortina(double largura, double altura, String tecido) {
-        super(largura, altura);
-        this.tecido = tecido;
-        
-        switch (tecido.toLowerCase()) {
-            case "voil":
-                precoM2 = 40;
-                break;
-            case "linho":
-                precoM2 = 70;
-                break;
-            case "blackout":
-                precoM2 = 90;
-                break;
-            default:
-                precoM2 = 50;
-        }
-    }
-    public String getTecido(){
-        return this.tecido;
-    }
-}
-
-//ESSA É DO PEDIDO(COMO VAI FUNCIONAR?)
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class Pedido {
-    private Cliente cliente;
-    private List<Produto> itens = new ArrayList<>();
-    
-    Pedido(Cliente cliente){
-        this.cliente=cliente;
-    }
-
-    public void adicionarItem(Produto produto) {
-        itens.add(produto);
-    }
-
-    public double calcularTotal() {
-        double total=0;
-
-        for (Produto produto : itens) {
-            total += produto.calcularPreco();
-        }
-
-        return total;
-    }
-    public Cliente getCliente(){
-        return this.cliente;
-    }
-}
-
-//Classe de Cliente
-
-public class Cliente{
-    protected String nome, documento;
-    Cliente(String nome, String documento){
-        String limpo=documento.replaceAll("[^0-9]","");
-        if(limpo.length() !=11 && limpo.length() !=14){
-            throw new IllegalArgumentException("Dimensoes do documento nao aceitas");
-        }
-        this.nome=nome;
-        this.documento=limpo;
-    }
-    public String getNome(){
-        return this.nome;
-    }
-    public String getDocumento(){
-        return this.documento;
-    }
-}
-
-//Verificador para disponibilidade do documento
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class Verificador{
-    private List<Cliente>clientCadas=new ArrayList<>();
-    boolean adicionarCliente(Cliente novoCliente){
-        for(Cliente a: clientCadas){
-            if(a.getDocumento().equals(novoCliente.getDocumento())){
-                System.out.println("Cadastro negado, documento ja cadastrado!");
-                return false;
-            }
-        }
-        clientCadas.add(novoCliente);
-        System.out.println("Cliente cadastrado com sucesso!");
-        return true;
-    }
-}
-
-//Classe de teste funcional, exemplificando o funcionamento atual
-
-public class Programa{
-    public static void main(String[]args){
-        Verificador verificador1= new Verificador();
-        try{
-            //Clientes
-            Cliente cliente1= new Cliente("Fulano da Silva", "123.456.123-45");
-            Cliente cliente2= new Cliente("Beltrano Encomendas", "12.345.678/0001-99");
-            //Cadastro
-            System.out.println("--- Tentativas de Cadastro ---\n");
-            verificador1.adicionarCliente(cliente1);
-            verificador1.adicionarCliente(cliente2);
-            //Criacao de pedido
-            Pedido pedido1=new Pedido(cliente1);
-            Toldo toldo1= new Toldo(3,1.7,"aco", "retratil", "preto");
-            pedido1.adicionarItem(toldo1);
-            System.out.println("\nPedido feito para: "+pedido1.getCliente().getNome()+
-            "\nTotal: "+String.format("%.2f", pedido1.calcularTotal())+" R$\n");
-            //Exemplos de erros
-            Cliente cliente3= new Cliente("Ciclano dos Santos", "123.456.123-45");
-            verificador1.adicionarCliente(cliente3);
-            Cliente cliente4= new Cliente("Jose Fonseca", "123");
-        }
-        catch(IllegalArgumentException a){
-            System.out.println("Alerta: "+a.getMessage());
-        }
     }
 }
