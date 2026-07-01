@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            prefWidth="500"
+            prefHeight="500" fx:controller="controller.CriarOrcamentoController">
+
+    
+    <top>
+        <VBox alignment="CENTER"
+              style="-fx-background-color:#233142;">
+
+            <padding>
+                <Insets top="20" bottom="20"/>
+            </padding>
+
+            <Label text="Novo Orçamento"
+                   style="-fx-font-size:30px;
+                          -fx-font-weight:bold;
+                          -fx-text-fill:white;"/>
+
+            <Label text="Informe os dados iniciais do orçamento."
+                   style="-fx-text-fill:white;
+                          -fx-font-size:15px;"/>
+
+        </VBox>
+    </top>
+
+    
+    <center>
+
+        <GridPane alignment="CENTER"
+                  hgap="20"
+                  vgap="20">
+
+            <Label text="Cliente:"
+                   GridPane.rowIndex="0"
+                   GridPane.columnIndex="0"/>
+
+            <ComboBox fx:id="cbCliente"
+                      prefWidth="300"
+                      promptText="Selecione um cliente"
+                      GridPane.rowIndex="0"
+                      GridPane.columnIndex="1"/>
+
+            <Label text="Quantidade de produtos:"
+                   GridPane.rowIndex="1"
+                   GridPane.columnIndex="0"/>
+
+            <Spinner fx:id="spQuantidadeProdutos"
+                     prefWidth="120"
+                     GridPane.rowIndex="1"
+                     GridPane.columnIndex="1"/>
+
+            <Label text="Quantidade de toldos:"
+                   GridPane.rowIndex="2"
+                   GridPane.columnIndex="0"/>
+
+            <Spinner fx:id="spQtdToldos"
+                     prefWidth="120"
+                     GridPane.rowIndex="2"
+                     GridPane.columnIndex="1"/>
+
+            <Label text="Quantidade de cortinas:"
+                   GridPane.rowIndex="3"
+                   GridPane.columnIndex="0"/>
+
+            <Spinner fx:id="spQtdCortinas"
+                     prefWidth="120"
+                     GridPane.rowIndex="3"
+                     GridPane.columnIndex="1"/>
+
+        </GridPane>
+
+    </center>
+
+   
+    <bottom>
+
+        <HBox alignment="CENTER_RIGHT"
+              spacing="15">
+
+            <padding>
+                <Insets top="20"
+                        right="30"
+                        bottom="20"
+                        left="30"/>
+            </padding>
+
+            <Button text="Cancelar"
+                    fx:id="btnCancelar"
+                    prefWidth="120"/>
+
+            <Button text="Próximo"
+                    fx:id="btnProximo"
+                    prefWidth="120"
+                    onAction="#abrirFormularioProdutos"/>
+
+        </HBox>
+
+    </bottom>
+
+</BorderPane>
