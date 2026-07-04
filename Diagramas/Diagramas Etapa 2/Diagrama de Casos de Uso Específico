@@ -1,0 +1,39 @@
+@startuml
+actor Vendedor
+
+rectangle "Gestão de Clientes" {
+    usecase "Cadastrar Cliente" as UC_CadCliente
+    usecase "Excluir Cliente" as UC_ExcCliente
+}
+
+rectangle "Gestão de Vendedores" {
+    usecase "Cadastrar Vendedor" as UC_CadVendedor
+    usecase "Excluir Vendedor" as UC_ExcVendedor
+}
+
+rectangle "Gestão de Produtos" {
+    usecase "Cadastrar Toldo" as UC_CadToldo
+    usecase "Cadastrar Cortina" as UC_CadCortina
+    usecase "Excluir Produto" as UC_ExcProduto
+}
+
+rectangle "Módulo de Orçamentos" {
+    usecase "Criar Orçamento" as UC_CriarOrc
+    usecase "Atualizar Status do Orçamento" as UC_AtuStatus
+    usecase "Excluir Orçamento" as UC_ExcOrc
+}
+
+Vendedor --> UC_CadCliente
+Vendedor --> UC_ExcCliente
+
+Vendedor --> UC_CadVendedor
+Vendedor --> UC_ExcVendedor
+
+Vendedor --> UC_CadToldo
+Vendedor --> UC_CadCortina
+Vendedor --> UC_ExcProduto
+
+Vendedor --> UC_CriarOrc
+Vendedor --> UC_AtuStatus
+Vendedor --> UC_ExcOrc
+@enduml
