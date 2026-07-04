@@ -10,263 +10,204 @@
 
 ## Seção 1 - Introdução
 ### Justificativa
-O processo de orçamento de produtos sob medida, como toldos e cortinas, historicamente se apoia em fluxos manuais. Isso recai diretamente a três gargalos operacionais: a lentidão no atendimento ao cliente, a alta suscetibilidade a erros humanos nos cálculos de metragens e componentes e a dispersão de dados comerciais cruciais. A centralização dessas operações em um ecossistema digital unificado é importante para padronizar o fluxo de trabalho, mitigar perdas financeiras decorrentes de orçamentos errôneos e fornecer uma base de dados íntegra para a tomada de decisões gerenciais.
+O processo de elaboração de orçamentos para produtos sob medida, como toldos e cortinas, exige organização, precisão nos cálculos e controle adequado das informações comerciais. Quando esse processo é realizado de forma manual ou descentralizada, surgem problemas como lentidão no atendimento ao cliente, erros no cálculo de área e preço, dificuldade de rastrear clientes, vendedores e produtos, além da perda de histórico operacional.
+
+Diante desse cenário, o projeto propõe o desenvolvimento de um sistema desktop para gestão de orçamentos, com foco na centralização das informações, automatização dos cálculos e melhoria da organização administrativa. A solução busca apoiar lojas e profissionais que trabalham com produtos sob medida, oferecendo um ambiente mais estruturado para cadastrar clientes, vendedores, produtos e orçamentos.
 
 ### Descrição do Problema
-O ambiente administrativo de lojas de decoração e coberturas sob medida sofre com a falta de rastreabilidade. Atualmente, o ciclo de vida de um orçamento é de difícil monitoramento, não há mecanismos práticos para extrair o histórico de vendas indexado por critérios como vendedor, cliente ou período temporal, o que impossibilita auditorias ágeis e análises de desempenho comercial individualizado. Ademais, o armazenamento de dados sensíveis de clientes sem critérios computacionais definidos expõe a organização a vulnerabilidades de conformidade legal. Por fim, as interfaces frequentemente negligenciam parâmetros de usabilidade e inclusão digital, criando barreiras de acessibilidade no cotidiano operacional.
+Lojas de decoração, coberturas e produtos sob medida lidam diariamente com informações variadas, como dados de clientes, características de produtos, medidas, valores, vendedores responsáveis e status de negociação. Sem um sistema adequado, essas informações podem ficar dispersas em anotações, planilhas ou registros informais, dificultando consultas, exclusões, acompanhamento de propostas e análise do processo comercial.
+
+Além disso, o cálculo de produtos sob medida depende de variáveis como largura, altura, material, tipo, tecido e preço por metro quadrado. A realização manual desses cálculos aumenta o risco de erros, podendo gerar prejuízos financeiros ou inconsistências nos valores apresentados ao cliente.
+
+Outro problema importante está relacionado ao ciclo de vida dos orçamentos. Um orçamento pode estar em análise, aprovado, recusado ou cancelado, e essas mudanças precisam ser controladas de forma clara. A ausência de um controle estruturado compromete a rastreabilidade e dificulta o gerenciamento das operações.
 
 ### Motivação
-A principal motivação deste projeto nasceu na oportunidade de criar uma solução de software de alta fidelidade técnica, utilizando **Java** no ecossistema e **JavaFX** para a construção de uma interface gráfica e responsiva para o usuário final. O grupo busca inovar através de uma arquitetura limpa, garantindo a perfeita harmonia entre a manipulação orientada a objetos no backend e os componentes visuais. O projeto se justifica academicamente pelo domínio prático das tecnologias propostas de engenharia de software e, também, pela democratização do acesso a ferramentas de gestão eficientes. 
+A motivação do projeto está na criação de uma solução prática que una regras de negócio, interface gráfica e persistência de dados em uma aplicação desktop. Inicialmente, o sistema foi desenvolvido com foco na validação das classes principais e dos cálculos. Posteriormente, evoluiu para uma aplicação com interface JavaFX, banco de dados SQLite e separação em camadas. Essa evolução permite demonstrar, de forma prática, a aplicação de conceitos fundamentais de engenharia de software, como encapsulamento, herança, abstração, validação de dados, organização arquitetural, uso de DAOs e integração entre interface e backend.
 
 ## Seção 2 - Plano
 
 ### Objetivo Geral
-Planejar, modelar e iniciar o desenvolvimento de um sistema desktop para automação e gerenciamento do ciclo de vida de orçamentos de toldos e cortinas, utilizando conceitos de Programação Orientada a Objetos com a linguagem **Java** e construção de interface via **JavaFX**, assegurando a conformidade técnica com parâmetros de usabilidade, acessibilidade e segurança de dados.
+Desenvolver um sistema para automação e gerenciamento de orçamentos de toldos e cortinas, utilizando Java, Programação Orientada a Objetos, JavaFX e banco de dados SQLite, com foco na organização dos cadastros, automatização dos cálculos e controle do ciclo de vida dos orçamentos.
 
 ### Objetivos Específicos
-**Estruturação de Arquitetura:** Mapear e implementar as entidades de domínio essenciais.
+**Modelar o domínio do problema:** representar, por meio de classes Java, os principais elementos do sistema, como clientes, vendedores, produtos, toldos, cortinas e orçamentos.
 
-**Persistência e Operações CRUD:** Desenvolver a lógica modular para permitir operações completas de criação, leitura, atualização e deleção das entidades de cadastro, assim como validadores estruturais de documentos.
+**Aplicar Programação Orientada a Objetos:** utilizar conceitos como encapsulamento, herança, abstração, polimorfismo e interfaces para estruturar o funcionamento interno do sistema.
 
-**Mecanismo de Precificação Automatizado:** Implementar uma classe de serviço matemática capaz de calcular dinamicamente a área e o preço final de produtos sob medida com base em variáveis bidimensionais (largura e altura) inseridas pelo usuário.
+**Automatizar a precificação dos produtos:** calcular área e preço final com base nas dimensões e características dos produtos cadastrados.
 
-**Rastreabilidade e Estados:** Construir um motor de estados para controlar rigorosamente a transição do ciclo de vida dos orçamentos, prevenindo inconsistências de fluxo de caixa.
+**Validar dados essenciais:** aplicar regras de validação para documentos de clientes, percentual de comissão de vendedores e dimensões dos produtos.
 
-**Interface Responsiva com JavaFX:** Desenvolver um protótipo visual dinâmico que respeite as diretrizes da Lei Brasileira de Inclusão, oferecendo um ambiente administrativo fluido e livre de barreiras de uso.
+**Controlar o ciclo de vida dos orçamentos:** permitir que os orçamentos sejam classificados por status, como Em Analise, Aprovado, Recusado e Cancelado.
 
-**Segurança da Informação e LGPD:** Blindar o tráfego e armazenamento das strings de dados pessoais sensíveis dos clientes coletados no sistema.
+**Implementar persistência de dados:** armazenar clientes, vendedores, produtos e orçamentos em banco de dados SQLite.
 
-## Seção 3 - Divisão de Tarefas
+**Organizar o sistema em camadas:** separar responsabilidades entre interface gráfica, camada de serviço, classes de domínio, repositórios DAO e gerenciamento do banco de dados.
+
+**Criar interface gráfica com JavaFX:** disponibilizar uma aplicação organizada em abas para facilitar o cadastro, consulta, exclusão e gerenciamento das informações.
+
+**Produzir diagramas UML:** documentar a estrutura e os principais fluxos do sistema por meio de diagramas de caso de uso, classes e sequência.
+
+### Tecnologias Utilizadas
+
+O projeto foi desenvolvido utilizando ferramentas como Java, JavaFX, SQLite, Conceitos de POO, Conceitos de Arquitetura em Camadas, UML e PlantUML.
+
+## Seção 3 - Funcionalidades 
+
+O sistema permite o gerenciamento de clientes, vendedores, produtos e orçamentos relacionados à venda de toldos e cortinas sob medida.
+
+### Gestão de Clientes
+
+O sistema permite cadastrar clientes com informações como nome, documento, telefone, email e endereço. Também, realiza a validação do documento informado e se o documento já está cadastrado antes de salvar como novo cliente.
+
+### Gestão de Vendedores
+
+O sistema permite cadastrar vendedores responsáveis pelos orçamentos e possui nome, telefone, email e percentual de comissão. Também, realiza a validação do percentual de comissão de 0 a 100 e a comissão sobre o valor do orçamento.
+
+### Gestão de Produtos
+
+O sistema permite cadastrar produtos sob medida dos tipos Toldo e Cortina, ambos possuem largura, altura e preço por metro quadrado. O preço é calculado baseado no material e no tipo.
+
+### Gestão de Orçamentos 
+
+O sistema permite criar orçamentos associando cliente, vendedor e lista de produtos. Cada orçamento possui status, produtos vinculados e cálculo automático do valor total, além da comissão do vendedor com base no total do orçamento. Além disso, possui um ciclo de status e que permite atualização, facilitando o acompanhamento do ciclo comercial da proposta.
+
+### Interface Gráfica
+
+A aplicação desenvolvida e organizada em Clientes, Vendedores, Produtos e Orçamentos, em que cada aba reune campos, botões e tabelas necessárias para as operações de cada aba.
+
+## Seção 4 - Divisão de Tarefas
 
 ### Tarefas (Issues)
-O projeto foi dividido em tarefas menores (Issues) dentro do GitHub para facilitar o desenvolvimento incremental e garantir o acompanhamento visual do progresso. Nesta Etapa 1, as principais tarefas mapeadas foram:
-* **Configuração do Escopo:** Levantamento das justificativas, problemas e motivações do sistema de orçamento.
-* **Modelagem UML Inicial:** Construção dos diagramas de classes e de sequência.
-* **Implementação do Core:** Desenvolvimento das classes de domínio (`Produto`, `Toldo`, `Cortina`, `Pedido`, `Cliente` e `Verificador`) em Java.
-* **Classe `Cliente`:** Responsável por encapsular dados do comprador, contendo atributos e métodos de validação estrutural baseados na LGPD.
-* **Validação e Teste de Mesa:** Execução do fluxo através da classe `Programa` para garantir a precisão dos cálculos e ausência de bugs.
+O desenvolvimento do projeto foi dividido em tarefas menores para facilitar a evolução incremental da solução e permitir melhor acompanhamento das entregas.
 
-### Papéis e Responsabilidades
-A equipe distribuiu as competências técnicas de acordo com os perfis de domínio para maximizar a eficiência no ecossistema Java/JavaFX:
+As principais tarefas realizadas foram:
 
-* **Amanda da Silva Barros (Líder do Projeto):** Gestão do cronograma, refinamento do escopo com base nos requisitos e validação do projeto.
-* **Rafaella Modanez (Arquiteto de Software):** Desenho da arquitetura estrutural do sistema, mapeamento dos diagramas UML e garantia de conformidade no código.
-* **Dalila Rocha Parente (Desenvolvedora Backend):** Implementação do código, estruturação lógica dos construtores condicionais e desenvolvimento dos algoritmos matemáticos de precificação.
-* **Isabela Martins Albuquerque (Desenvolvedora Frontend):** Planejamento dos protótipos visuais e preparação do ecossistema JavaFX.
-* **Daniel Teixeira da Silva (Engenheiro de QA):** Escrita dos cenários de teste funcionais e validação dos fluxos principais.
+**Levantamento do escopo:** definição do problema, justificativa, motivação e objetivos do sistema.
 
-## Seção 4 - Modelagem inicial
+**Modelagem UML inicial:** construção dos primeiros diagramas de classes e sequência para representar as entidades principais e seus relacionamentos.
 
-### Diagrama de Classes - V1
+**Implementação do núcleo do domínio:** criação das classes iniciais do sistema, como Cliente, Produto, Toldo, Cortina, Pedido e componentes de validação.
 
-<img width="1117" height="661" alt="image" src="https://github.com/user-attachments/assets/2fa1b99b-1d96-42b0-976c-be7150822336" />
+**Validação dos cálculos:** implementação e teste da lógica de cálculo de área e preço dos produtos sob medida.
 
-```plantuml
-@startuml
-skinparam classAttributeIconSize 0
-skinparam monochrome true
+**Evolução do modelo de negócio:** substituição da ideia inicial de Pedido pela classe Orcamento, mais adequada ao domínio do sistema.
 
-abstract class Produto {
-    # largura : double
-    # altura : double
-    # precoM2 : double
-    + Produto(largura : double, altura : double)
-    + getArea() : double
-    + calcularPreco() : double
-    + getLargura() : double
-    + getAltura() : double
-    + getPrecoM2() : double
-}
+**Criação da entidade Vendedor:** implementação do cadastro de vendedores e do cálculo de comissão sobre o valor dos orçamentos.
 
-class Toldo {
-    # material : String
-    # tipo : String
-    # cor : String
-    + Toldo(largura: double, altura: double, material: String, tipo: String, cor: String)
-    + getCor() : String
-    + getMaterial() : String
-    + getTipo() : String
-}
+**Implementação do controle de status:** criação do enum StatusOrcamento para representar o ciclo de vida dos orçamentos.
 
-class Cortina {
-    # tecido : String
-    + Cortina(largura: double, altura: double, tecido: String)
-    + getTecido() : String
-}
+**Criação da camada de persistência:** desenvolvimento dos DAOs responsáveis pelas operações de banco de dados.
 
-class Pedido {
-    - cliente : Cliente
-    - itens : List<Produto>
-    + Pedido(cliente : Cliente)
-    + adicionarItem(produto : Produto) : void
-    + calcularTotal() : double
-    + getCliente() : Cliente
-}
+**Configuração do banco SQLite:** criação da classe Database e do script schema.sql para inicialização das tabelas do sistema.
 
-class Cliente {
-    # nome : String
-    # documento : String
-    ~ Cliente(nome : String, documento : String)
-    + getNome() : String
-    + getDocumento() : String
-}
+**Criação da camada de serviço:** implementação da classe SistemaService, responsável por centralizar os principais casos de uso da aplicação.
 
-class Verificador {
-    - clientCadas : List<Cliente>
-    ~ adicionarCliente(novoCliente : Cliente) : boolean
-}
+**Desenvolvimento da interface gráfica:** criação de abas para clientes, vendedores, produtos e orçamentos.
 
-Produto <|-- Toldo
-Produto <|-- Cortina
-Pedido "1" o-- "*" Produto
-Pedido "1" --> "1" Cliente : pertence a >
-Verificador "1" o-- "*" Cliente : verifica >
-@enduml
-```
+**Revisão dos diagramas UML:** atualização dos diagramas para refletir a arquitetura final do sistema e os principais fluxos implementados.
 
-### Diagrama de Sequência - V1
+## Seção 5 - Modelagem inicial
 
-<img width="1151" height="1481" alt="image" src="https://github.com/user-attachments/assets/e4ec8d07-9216-4914-9d79-5663bb94a6aa" />
+Os diagramas UML foram utilizados para representar visualmente a estrutura e o comportamento do sistema. 
+**OBS:** As imagens dos diagramas vão estar disponíveis neste README, enquanto os códigos que refletem exatamente a mesma imagem estará no repositório específico e organizado como "Diagramas/Diagramas Etapa 2", assim como as descrições de casos de uso completas.
 
-```plantuml
-@startuml
-skinparam monochrome true
-skinparam classAttributeIconSize 0
+### Diagrama de Classes
 
-participant "Programa" as Main
-participant "verificador1:Verificador" as Verificador
-participant "cliente1:Cliente" as Cliente
-participant "pedido1:Pedido" as Pedido
-participant "toldo1:Toldo" as Toldo
-participant "cortina1:Cortina" as Cortina
-participant "produto:Produto" as Produto
+O diagrama de classe básico apresenta uma visão simplificada do domínio, destacando as principais entidades do sistema e seus relacionamentos e está disponível logo abaixo apenas para entendimento geral do projeto. O diagrama de classe arquitetural apresentando uma visão mais completa da aplicação, mostrando a separação entre interface, serviço, domínio, repositórios e banco de dados está na pasta designada aos diagramas.
 
-activate Main
+<img width="1290" height="486" alt="DiagramaDeClasses-RD-V2" src="https://github.com/user-attachments/assets/852d1d87-fd28-4375-8e52-7971d6b34200" />
 
-' 1. Inicialização do Verificador
-create Verificador
-Main -> Verificador : new Verificador()
+### Diagrama de Sequência 
 
-' 2. Criação e Validação do Cliente
-create Cliente
-Main -> Cliente : new Cliente(nome, documento)
-activate Cliente
-    note over Cliente : Construtor limpa pontuação\ne valida tamanho do documento
-deactivate Cliente
+Os diagramas de sequência detalham os principais fluxos de execução do sistema, como cadastro de cliente, cadastro de vendedor, cadastro de produtos, criação de orçamento, atualização de status e exclusões.
 
-Main -> Verificador : adicionarCliente(cliente1)
-activate Verificador
-    Verificador -> Cliente : getDocumento()
-    note over Verificador : *[para cada cliente]: verifica duplicidade
-    Verificador --> Main : boolean (Status do cadastro)
-deactivate Verificador
+### Cadastrar Vendedor 
+<img width="970" height="357" alt="DiagramaDeSequencia-CadastroDeVendedor" src="https://github.com/user-attachments/assets/870594fc-b1cd-49df-b595-7330d2a4f40f" />
 
-' 3. Criação genérica do Pedido vinculado ao Cliente
-create Pedido
-Main -> Pedido : new Pedido(cliente1)
+### Excluir Vendedor
+<img width="530" height="342" alt="DiagramaDeSequencia-ExcluirVendedor" src="https://github.com/user-attachments/assets/70bc0640-409a-4bb5-b5ff-2c4824db473c" />
 
-' 4. Criação genérica dos itens
-create Toldo
-Main -> Toldo : new Toldo(largura, altura, material, tipo, cor)
-activate Toldo
-    note over Toldo : Construtor avalia as variáveis\n'material' e 'tipo' via switch\ne incrementa precoM2
-deactivate Toldo
+### Cadastrar Cliente
+<img width="921" height="415" alt="DiagramaDeSequencia-CadastroDeCliente" src="https://github.com/user-attachments/assets/1b97b24a-b1f8-4b71-8730-728aa64a3049" />
 
-create Cortina
-Main -> Cortina : new Cortina(largura, altura, tecido)
-activate Cortina
-    note over Cortina : Construtor avalia a variável\n'tecido' via switch\ne define precoM2
-deactivate Cortina
+### Excluir Cliente
+<img width="457" height="342" alt="DiagramaDeSequencia-ExcluirCliente" src="https://github.com/user-attachments/assets/f03d13e8-3fc4-45ad-949c-735dca6d80e0" />
 
-' 5. Adição genérica dos itens à lista
-Main -> Pedido : adicionarItem(toldo1)
-activate Pedido
-    note over Pedido : itens.add(produto)
-deactivate Pedido
+### Cadastrar Toldo
+<img width="539" height="299" alt="DiagramaDeSequencia-CadastroDeToldo" src="https://github.com/user-attachments/assets/586a2365-7a86-4ecd-8d18-bc62ad3b819a" />
 
-Main -> Pedido : adicionarItem(cortina1)
-activate Pedido
-    note over Pedido : itens.add(produto)
-deactivate Pedido
+### Cadastrar Cortina
+<img width="560" height="307" alt="DiagramaDeSequencia-CadastroDeCortina" src="https://github.com/user-attachments/assets/5f7d2d42-1c68-4166-b81b-3b3c0be73c5c" />
 
-' 6. Consultas genéricas de atributos (Gets)
-Main -> Pedido : getCliente()
-Main -> Cliente : getNome()
-Main -> Toldo : getLargura()
-Main -> Toldo : getAltura()
-Main -> Cortina : getLargura()
-Main -> Cortina : getAltura()
+### Excluir Produto
+<img width="481" height="342" alt="DiagramaDeSequencia-ExcluirProduto" src="https://github.com/user-attachments/assets/d3717b13-8852-40b4-ac07-1c6528beee95" />
 
-' 7. Cálculos individuais de preços
-Main -> Toldo : calcularPreco()
-activate Toldo
-    Toldo -> Toldo : getArea()
-    note over Toldo : return largura * altura
-    Toldo --> Main : area * precoM2
-deactivate Toldo
+### Criar Orçamento
+<img width="1125" height="532" alt="DiagramaDeSequencia-CriarOrcamento" src="https://github.com/user-attachments/assets/8d428a78-2394-4328-ad6a-4c00d61356f5" />
 
-Main -> Cortina : calcularPreco()
-activate Cortina
-    Cortina -> Cortina : getArea()
-    note over Cortina : return largura * altura
-    Cortina --> Main : area * precoM2
-deactivate Cortina
+#### Atualizar Status Orçamento
+<img width="646" height="385" alt="DiagramaDeSequencia-AtualizarStatus" src="https://github.com/user-attachments/assets/1f03c6ea-d751-4f7a-8087-2de81273d8df" />
 
-' 8. Processamento do cálculo total acumulado do pedido
-Main -> Pedido : calcularTotal()
-activate Pedido
-    
-    Pedido -> Produto : *[para cada produto]: calcularPreco()
-    activate Produto
-        Produto -> Produto : getArea()
-        Produto --> Pedido : subtotal
-    deactivate Produto
-    
-    note over Pedido : total += subtotal
-    
-    Pedido --> Main : total
-deactivate Pedido
+### Excluir Orçamento
+<img width="569" height="342" alt="DiagramaDeSequencia-ExcluirOrcamento" src="https://github.com/user-attachments/assets/1a3811a2-a4b0-4014-83c7-c6cef81aebea" />
 
-' O fluxo apenas termina com a saída de dados gerada no console
-note over Main : System.out.println() exibe os\nresultados finais calculados no console
-@enduml
-```
 
-### Descrição de Caso de Uso - V1
+### Descrição de Caso de Uso
 
-#### Caso de Uso 1 - Calcular Total do Pedido
+O diagrama de caso de uso específico apresenta as funcionalidades disponíveis ao usuário, como cadastrar clientes, cadastrar vendedores, cadastrar produtos, criar orçamentos, atualizar status e excluir registros.
+
+<img width="2019" height="222" alt="DiagramaEspecificoCasoDeUso" src="https://github.com/user-attachments/assets/156e46bd-bcff-44b6-ac6e-f7ded3895ede" />
+
+#### Cadastrar Cliente
+OBS: Lembrando que as descrições de casos de uso completas está no repositório específico e organizado como "Diagramas/Diagramas Etapa 2", segue apenas um exemplo de como está estruturado.
+
+### 01 – Cadastrar Cliente
 
 | Campo | Descrição |
 | :--- | :--- |
-| **Nome** | calcularTotal |
-| **Ator Principal** | Sistema |
-| **Descrição** | O sistema percorre todos os produtos vinculados ao pedido para consolidar o valor final acumulado. |
-| **Pré-condições** | O objeto `Pedido` deve conter as instâncias de produtos adicionadas à sua lista interna `itens`. |
-| **Pós-condições** | O valor total acumulado do pedido é retornado. |
-| **Fluxo Principal** | 1. O sistema invoca o método `calcularTotal()` da classe `Pedido`. <br>2. O sistema inicia um laço de repetição `for` para percorrer a lista `itens`. <br>3. Para cada objeto contido na lista, o método `calcularPreco()` é acionado. <br>4. O valor retornado de cada item é somado diretamente à variável acumuladora `total`. <br>5. O laço se encerra e o método retorna o valor contido em `total`. |
-| **Alternativas** | 2a. Se a lista de itens estiver vazia, o laço de repetição não é executado e o método retorna o valor inicial zero (`0`). |
+| **Nome** | cadastrarCliente |
+| **Ator Principal** | Vendedor |
+| **Descrição** | O vendedor realiza a inclusão de um novo cliente no sistema para permitir gerar orçamentos futuros. |
+| **Pré-condições** | O vendedor deve estar cadastrado e na tela de gerenciamento de clientes. |
+| **Pós-condições** | O cliente é registrado com sucesso no banco de dados e recebe um ID único. |
+| **Fluxo Principal** | 1. O vendedor solicita a inclusão de um novo cliente.<br>2. O sistema exibe o formulário de cadastro requisitando os dados (Nome, Documento, Telefone, Email, Endereço).<br>3. O vendedor insere as informações obrigatórias e confirma.<br>4. O sistema valida a consistência dos dados inseridos.<br>5. O sistema persiste as informações no banco de dados através da `ClienteDAO`.<br>6. O sistema exibe uma mensagem confirmando o sucesso do cadastro. |
+| **Alternativas** | **4a. Dados obrigatórios em branco ou inválidos:**<br>1. O sistema identifica que campos obrigatórios não foram preenchidos ou estão incorretos.<br>2. O sistema exibe um alerta apontando os erros e impede o salvamento até a correção.<br><br>**4b. Cliente já cadastrado:**<br>1. O sistema consulta o banco de dados e identifica que já existe um cliente com o mesmo documento.<br>2. O sistema interrompe a operação, informa o vendedor sobre a duplicidade e retorna ao formulário. |
 
-#### Caso de Uso 2 - Cadastrar Cliente com Validação
+## Seção 6 - Evolução entre Versões e Destaques
 
-| Campo | Descrição |
-| :--- | :--- |
-| **Nome** | adicionarCliente |
-| **Ator Principal** | Sistema |
-| **Descrição** | O sistema recebe dados de um novo cliente, realiza a limpeza e validação do tamanho de seu documento corporativo ou pessoal e confere se este registro já se encontra duplicado. |
-| **Pré-condições** | O objeto `Verificador` deve estar instanciado. |
-| **Pós-condições** | O cliente é incluído com sucesso na lista caso seu documento seja único, ou gera interrupção controlada via exceção caso possua formato inválido. |
-| **Fluxo Principal** | 1. O sistema dispara a criação de `Cliente`.<br><br>2. O construtor higieniza caracteres não numéricos e avalia se o comprimento possui tamanho exato de 11 ou 14 dígitos.<br><br>3. O método `adicionarCliente(novoCliente)` percorre a lista interna `clientCadas` em busca de igualdade de chaves documento.<br><br>4. Se o documento for inédito, o registro é inserido e retorna verdadeiro. |
-| **Alternativas** | **2a.** Se o documento numérico final possuir comprimento discrepante de 11 ou 14 dígitos, dispara `IllegalArgumentException` interrompendo o fluxo.<br><br>**3a.** Se houver correspondência idêntica com documento pré-existente na lista, o método aborta a inserção e retorna falso. |
+### Versão 1 - Validação Inicial do Domínio
 
-## Seção 5 - Evoluções Futuras e Próximos Passos (Planejamento V2)
+A primeira versão do projeto teve como objetivo validar as regras de negócio principais em uma aplicação simples executada via console. Nessa etapa, o foco estava na construção do núcleo lógico do sistema, sem interface gráfica e sem persistência em banco de dados.
 
-Para as próximas etapas de desenvolvimento do **Sistema de Gestão de Orçamento**, o ecossistema atual — focado em regras de negócio básicas no console — será expandido para incorporar a infraestrutura completa de software planejada na Seção 2.
+A V1 contemplava classes como Cliente, Produto, Toldo, Cortina, Pedido e VerificadorCadastro. Essa estrutura permitiu validar conceitos como herança, abstração, encapsulamento, cálculo de área, cálculo de preço e verificação de documentos já cadastrados.
 
-### 1. Evolução do Modelo de Domínio (Novas Classes)
-A arquitetura orientada a objetos receberá novas entidades para viabilizar a rastreabilidade e a persistência de dados comerciais:
-* **Classe `Vendedor`:** Representará o operador do sistema, responsável por associar o funcionário ao orçamento criado para fins de auditoria e cálculo de desempenho.
-* **Classe `Orcamento`:** Substituirá a classe temporária `Pedido`, agregando um motor de estados dinâmico (`Em Análise`, `Aprovado`, `Recusado`, `Cancelado`) para controlar o ciclo de vida comercial da venda.
-* **Adição de ORM e Banco de Dados:** Integração de um mapeamento objeto-relacional para realizar a persistência definitiva das informações.
+Nessa fase, o sistema já permitia criar clientes, adicionar produtos a um pedido e calcular o valor total com base nas dimensões e características dos produtos. O objetivo principal era garantir que a lógica de domínio estivesse funcionando antes da evolução para uma aplicação mais completa.
 
-### 2. Implementação da Interface Gráfica (JavaFX)
-A classe `Programa` (execução via console) será descontinuada para dar lugar a uma aplicação Desktop construída sobre o ecossistema **JavaFX**. O fluxo visual será mapeado conforme as diretrizes de usabilidade e inclusão, distribuindo-se nos componentes a serem definidos.
+### Versão 2 - Aplicação Desktop com Arquitetura em Camadas
+
+A segunda versão expandiu o projeto para uma aplicação com interface gráfica, persistência em banco de dados e arquitetura organizada em camadas. A aplicação passou a utilizar JavaFX para interação com o usuário e SQLite para armazenamento dos dados.
+
+A classe Pedido, utilizada na V1, foi substituída por Orcamento, que representa melhor o domínio comercial do sistema. Além disso, foram adicionadas as entidades Vendedor e StatusOrcamento, permitindo associar cada orçamento a um vendedor, calcular comissão e controlar o estado da proposta.
+
+A V2 também introduziu a camada de serviço por meio da classe SistemaService, responsável por centralizar os principais fluxos do sistema, e a camada de repositórios com os DAOs ClienteDAO, VendedorDAO, ProdutoDAO e OrcamentoDAO.
+
+### Principais Melhorias da V1 para a V2
+
+**Interface gráfica:** o sistema deixou de operar apenas em console e passou a ter uma interface JavaFX organizada em abas.
+
+**Persistência de dados:** os registros passaram a ser armazenados em banco SQLite, permitindo manter informações entre execuções da aplicação.
+
+**Arquitetura em camadas:** o projeto passou a separar melhor as responsabilidades entre interface, serviço, domínio, repositórios e banco de dados.
+
+**Cadastro de vendedores:** a V2 passou a permitir o cadastro e exclusão de vendedores, além do cálculo de comissão.
+
+**Controle de status:** os orçamentos passaram a possuir estados definidos, como Em Analise, Aprovado, Recusado e Cancelado.
+
+**Relacionamento entre orçamento e produtos:** foi criada uma associação entre orçamentos e produtos, permitindo que um orçamento contenha múltiplos itens.
+
+**DAOs especializados:** a persistência passou a ser organizada em classes específicas para cada entidade principal.
+
+**Validações aprimoradas:** o sistema manteve validações de documentos e dimensões, além de incluir validação do percentual de comissão dos vendedores.
+
+**Organização visual da aplicação:** a interface passou a agrupar funcionalidades por abas: clientes, vendedores, produtos e orçamentos.
