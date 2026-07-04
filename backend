@@ -1,33 +1,155 @@
-//INTERFACE
-public interface Validavel {
+//base de dados - schema.sql
 
-    boolean validar();
+CREATE TABLE IF NOT EXISTS clientes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    documento TEXT NOT NULL UNIQUE,
+    telefone TEXT,
+    email TEXT,
+    endereco TEXT
+);
+
+CREATE TABLE IF NOT EXISTS vendedores (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    telefone TEXT,
+    email TEXT,
+    percentual_comissao REAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS produtos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    categoria TEXT NOT NULL,
+    largura REAL NOT NULL,
+    altura REAL NOT NULL,
+    material TEXT,
+    tipo TEXT,
+    cor TEXT,
+    tecido TEXT,
+    preco_m2 REAL NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS orcamentos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cliente_id INTEGER NOT NULL,
+    vendedor_id INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    criado_em TEXT NOT NULL,
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id),
+    FOREIGN KEY (vendedor_id) REFERENCES vendedores(id)
+);
+
+CREATE TABLE IF NOT EXISTS orcamento_produtos (
+    orcamento_id INTEGER NOT NULL,
+    produto_id INTEGER NOT NULL,
+    PRIMARY KEY (orcamento_id, produto_id),
+    FOREIGN KEY (orcamento_id) REFERENCES orcamentos(id),
+    FOREIGN KEY (produto_id) REFERENCES produtos(id)
+);
+
+
+//database.java
+package br.com.g4.orcamentos.database;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+public class Database {
+    private static final String DB_DIR = "database";
+    private static final String URL = "jdbc:sqlite:" + DB_DIR + "/orcamentos.db";
+
+    private Database() {
+    }
+
+    public static Connection getConnection() throws SQLException {
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException ex) {
+            throw new SQLException("Driver SQLite JDBC nao encontrado em versao-final/lib.", ex);
+        }
+        return DriverManager.getConnection(URL);
+    }
+
+    public static void inicializar() {
+        File dir = new File(DB_DIR);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        executarSchema();
+    }
+
+    private static void executarSchema() {
+        File schema = new File(DB_DIR, "schema.sql");
+        if (!schema.exists()) {
+            throw new IllegalStateException("Arquivo database/schema.sql nao encontrado.");
+        }
+        StringBuilder sql = new StringBuilder();
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(schema));
+            String linha;
+            while ((linha = reader.readLine()) != null) {
+                sql.append(linha).append('\n');
+            }
+            reader.close();
+            Connection connection = getConnection();
+            Statement statement = connection.createStatement();
+            String[] comandos = sql.toString().split(";");
+            for (String comando : comandos) {
+                if (!comando.trim().isEmpty()) {
+                    statement.execute(comando);
+                }
+            }
+            statement.close();
+            connection.close();
+        } catch (Exception ex) {
+            throw new IllegalStateException("Falha ao inicializar banco de dados: " + ex.getMessage(), ex);
+        }
+    }
 }
 
-//CLIENTES
-public class Cliente implements Validavel {
+//domain
+//cliente.java
+package br.com.g4.orcamentos.domain;
 
+public class Cliente implements Validavel {
     private Integer id;
     private String nome;
     private String documento;
+    private String telefone;
+    private String email;
+    private String endereco;
 
-    public Cliente(String nome,
-                   String documento) {
-
-        this.nome = nome;
-
-        this.documento = documento.replaceAll("[^0-9]", "");
-        
-        if(!validar()){
-            throw new IllegalArgumentException("Documento invalido, deve conter 11 (cpf) ou 14 (cnpj) digitos");
+    public Cliente(String nome, String documento, String telefone, String email, String endereco) {
+        this.nome = normalizarTexto(nome);
+        this.documento = limparDocumento(documento);
+        this.telefone = telefone == null ? "" : telefone.trim();
+        this.email = email == null ? "" : email.trim();
+        this.endereco = endereco == null ? "" : endereco.trim();
+        if (!validar()) {
+            throw new IllegalArgumentException("Cliente invalido: informe nome e CPF/CNPJ com 11 ou 14 digitos.");
         }
     }
 
-    @Override
-    public boolean validar() {
+    public Cliente(Integer id, String nome, String documento, String telefone, String email, String endereco) {
+        this(nome, documento, telefone, email, endereco);
+        this.id = id;
+    }
 
-        return documento.length() == 11
-                || documento.length() == 14;
+    public boolean validar() {
+        return nome != null && !nome.trim().isEmpty() && (documento.length() == 11 || documento.length() == 14);
+    }
+
+    public static String limparDocumento(String documento) {
+        return documento == null ? "" : documento.replaceAll("[^0-9]", "");
+    }
+
+    private String normalizarTexto(String valor) {
+        return valor == null ? "" : valor.trim();
     }
 
     public Integer getId() {
@@ -42,249 +164,1500 @@ public class Cliente implements Validavel {
         return nome;
     }
 
+    public void setNome(String nome) {
+        this.nome = normalizarTexto(nome);
+    }
+
+    public String getDocumento() {
+        return documento;
+    }
+
+    public void setDocumento(String documento) {
+        this.documento = limparDocumento(documento);
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public void setTelefone(String telefone) {
+        this.telefone = telefone == null ? "" : telefone.trim();
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email == null ? "" : email.trim();
+    }
+
+    public String getEndereco() {
+        return endereco;
+    }
+
+    public void setEndereco(String endereco) {
+        this.endereco = endereco == null ? "" : endereco.trim();
+    }
+
+    public String toString() {
+        return nome + " (" + documento + ")";
+    }
+}
+
+//cortina.java
+package br.com.g4.orcamentos.domain;
+
+public class Cortina extends Produto {
+    private String tecido;
+
+    public Cortina(double largura, double altura, String tecido) {
+        super(largura, altura);
+        this.tecido = tecido == null ? "" : tecido.trim();
+        this.precoM2 = calcularValorMetro(tecido);
+    }
+
+    public String getCategoria() {
+        return "CORTINA";
+    }
+
+    public double valorMetroQ() {
+        return precoM2;
+    }
+
+    private double calcularValorMetro(String valor) {
+        String base = valor == null ? "" : valor.toLowerCase();
+        if (base.equals("voil")) return 40;
+        if (base.equals("linho")) return 70;
+        if (base.equals("blackout")) return 90;
+        if (base.equals("persiana")) return 110;
+        return 50;
+    }
+
+    public String getTecido() {
+        return tecido;
+    }
+}
+
+
+//orcamento.java
+package br.com.g4.orcamentos.domain;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Orcamento {
+    private Integer id;
+    private Cliente cliente;
+    private Vendedor vendedor;
+    private List<Produto> produtos = new ArrayList<Produto>();
+    private StatusOrcamento status = StatusOrcamento.EM_ANALISE;
+    private LocalDateTime criadoEm = LocalDateTime.now();
+
+    public Orcamento(Cliente cliente, Vendedor vendedor) {
+        if (cliente == null || vendedor == null) {
+            throw new IllegalArgumentException("Orcamento precisa de cliente e vendedor.");
+        }
+        this.cliente = cliente;
+        this.vendedor = vendedor;
+    }
+
+    public Orcamento(Integer id, Cliente cliente, Vendedor vendedor, StatusOrcamento status, LocalDateTime criadoEm) {
+        this(cliente, vendedor);
+        this.id = id;
+        this.status = status == null ? StatusOrcamento.EM_ANALISE : status;
+        this.criadoEm = criadoEm == null ? LocalDateTime.now() : criadoEm;
+    }
+
+    public void addProduto(Produto produto) {
+        if (produto == null) {
+            throw new IllegalArgumentException("Produto nao pode ser nulo.");
+        }
+        if (status != StatusOrcamento.EM_ANALISE) {
+            throw new IllegalStateException("Produtos so podem ser alterados em orcamentos em analise.");
+        }
+        produtos.add(produto);
+    }
+
+    public void removerProduto(Produto produto) {
+        produtos.remove(produto);
+    }
+
+    public double calcularTotal() {
+        double total = 0;
+        for (Produto produto : produtos) {
+            total += produto.calcularPreco();
+        }
+        return total;
+    }
+
+    public void aprovar() {
+        alterarStatus(StatusOrcamento.APROVADO);
+    }
+
+    public void recusar() {
+        alterarStatus(StatusOrcamento.RECUSADO);
+    }
+
+    public void cancelar() {
+        alterarStatus(StatusOrcamento.CANCELADO);
+    }
+
+    public void reabrirAnalise() {
+        if (status == StatusOrcamento.CANCELADO) {
+            throw new IllegalStateException("Orcamento cancelado nao pode ser reaberto.");
+        }
+        status = StatusOrcamento.EM_ANALISE;
+    }
+
+    public void alterarStatus(StatusOrcamento novoStatus) {
+        if (novoStatus == null) {
+            throw new IllegalArgumentException("Status nao pode ser nulo.");
+        }
+        if (status == StatusOrcamento.CANCELADO && novoStatus != StatusOrcamento.CANCELADO) {
+            throw new IllegalStateException("Orcamento cancelado nao aceita nova transicao.");
+        }
+        status = novoStatus;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public Vendedor getVendedor() {
+        return vendedor;
+    }
+
+    public List<Produto> getProdutos() {
+        return Collections.unmodifiableList(produtos);
+    }
+
+    public void setProdutos(List<Produto> produtos) {
+        this.produtos = new ArrayList<Produto>();
+        if (produtos != null) {
+            this.produtos.addAll(produtos);
+        }
+    }
+
+    public StatusOrcamento getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getCriadoEm() {
+        return criadoEm;
+    }
+
+    public int getTotalProdutos() {
+        return produtos.size();
+    }
+
+    public double getComissaoVendedor() {
+        return vendedor.calcularComissao(calcularTotal());
+    }
+
+    public String toString() {
+        return "#" + id + " - " + cliente.getNome() + " - " + status;
+    }
+}
+
+
+//produto.java
+package br.com.g4.orcamentos.domain;
+
+public abstract class Produto {
+    private Integer id;
+    protected double largura;
+    protected double altura;
+    protected double precoM2;
+
+    public Produto(double largura, double altura) {
+        if (largura <= 0 || altura <= 0) {
+            throw new IllegalArgumentException("Largura e altura devem ser maiores que zero.");
+        }
+        this.largura = largura;
+        this.altura = altura;
+    }
+
+    public abstract String getCategoria();
+
+    public abstract double valorMetroQ();
+
+    public double getArea() {
+        return largura * altura;
+    }
+
+    public double calcularPreco() {
+        return getArea() * valorMetroQ();
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public double getLargura() {
+        return largura;
+    }
+
+    public double getAltura() {
+        return altura;
+    }
+
+    public double getPrecoM2() {
+        return valorMetroQ();
+    }
+
+    public String getResumo() {
+        return getCategoria() + " - " + String.format("%.2fm2", getArea()) + " - R$ " + String.format("%.2f", calcularPreco());
+    }
+
+    public String getMaterial() {
+        return "";
+    }
+
+    public String getTipo() {
+        return "";
+    }
+
+    public String getCor() {
+        return "";
+    }
+
+    public String getTecido() {
+        return "";
+    }
+
+    public String toString() {
+        return getResumo();
+    }
+}
+
+//statusorcamento.java
+package br.com.g4.orcamentos.domain;
+
+public enum StatusOrcamento {
+    EM_ANALISE,
+    APROVADO,
+    RECUSADO,
+    CANCELADO
+}
+
+//toldo.java
+package br.com.g4.orcamentos.domain;
+
+public class Toldo extends Produto {
+    private String material;
+    private String tipo;
+    private String cor;
+
+    public Toldo(double largura, double altura, String material, String tipo, String cor) {
+        super(largura, altura);
+        this.material = material == null ? "" : material.trim();
+        this.tipo = tipo == null ? "" : tipo.trim();
+        this.cor = cor == null ? "" : cor.trim();
+        this.precoM2 = calcularValorMetro();
+    }
+
+    public String getCategoria() {
+        return "TOLDO";
+    }
+
+    public double valorMetroQ() {
+        return precoM2;
+    }
+
+    private double calcularValorMetro() {
+        return valorPorMaterial(material) + valorPorTipo(tipo);
+    }
+
+    private double valorPorMaterial(String valor) {
+        String base = valor == null ? "" : valor.toLowerCase();
+        if (base.equals("madeira")) return 250;
+        if (base.equals("aluminio")) return 180;
+        if (base.equals("aco") || base.equals("aco galvanizado")) return 220;
+        if (base.equals("policarbonato")) return 260;
+        return 150;
+    }
+
+    private double valorPorTipo(String valor) {
+        String base = valor == null ? "" : valor.toLowerCase();
+        if (base.equals("retratil")) return 120;
+        if (base.equals("reto")) return 50;
+        if (base.equals("curvo")) return 90;
+        if (base.equals("articulado")) return 140;
+        return 60;
+    }
+
+    public String getMaterial() {
+        return material;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public String getCor() {
+        return cor;
+    }
+}
+
+//validavel.java
+package br.com.g4.orcamentos.domain;
+
+public interface Validavel {
+    boolean validar();
+}
+
+//vendedor.java
+package br.com.g4.orcamentos.domain;
+
+public class Vendedor implements Validavel {
+    private Integer id;
+    private String nome;
+    private String telefone;
+    private String email;
+    private double percentualComissao;
+
+    public Vendedor(String nome, String telefone, String email, double percentualComissao) {
+        this.nome = nome == null ? "" : nome.trim();
+        this.telefone = telefone == null ? "" : telefone.trim();
+        this.email = email == null ? "" : email.trim();
+        this.percentualComissao = percentualComissao;
+        if (!validar()) {
+            throw new IllegalArgumentException("Vendedor invalido: informe nome e percentual de comissao entre 0 e 100.");
+        }
+    }
+
+    public Vendedor(Integer id, String nome, String telefone, String email, double percentualComissao) {
+        this(nome, telefone, email, percentualComissao);
+        this.id = id;
+    }
+
+    public boolean validar() {
+        return nome != null && !nome.trim().isEmpty() && percentualComissao >= 0 && percentualComissao <= 100;
+    }
+
+    public Orcamento criarOrcamento(Cliente cliente) {
+        return new Orcamento(cliente, this);
+    }
+
+    public double calcularComissao(double valorVenda) {
+        if (valorVenda < 0) {
+            throw new IllegalArgumentException("Valor de venda nao pode ser negativo.");
+        }
+        return valorVenda * percentualComissao / 100.0;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public String getTelefone() {
+        return telefone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public double getPercentualComissao() {
+        return percentualComissao;
+    }
+
+    public String toString() {
+        return nome + " (" + percentualComissao + "%)";
+    }
+}
+
+//repository
+//clientedao.java
+package br.com.g4.orcamentos.repository;
+
+import br.com.g4.orcamentos.database.Database;
+import br.com.g4.orcamentos.domain.Cliente;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ClienteDAO {
+    public Cliente salvar(Cliente cliente) {
+        String sql = "INSERT INTO clientes (nome, documento, telefone, email, endereco) VALUES (?, ?, ?, ?, ?)";
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, cliente.getNome());
+            ps.setString(2, cliente.getDocumento());
+            ps.setString(3, cliente.getTelefone());
+            ps.setString(4, cliente.getEmail());
+            ps.setString(5, cliente.getEndereco());
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                cliente.setId(rs.getInt(1));
+            }
+            rs.close();
+            ps.close();
+            c.close();
+            return cliente;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel salvar cliente: " + ex.getMessage(), ex);
+        }
+    }
+
+    public List<Cliente> listar() {
+        List<Cliente> clientes = new ArrayList<Cliente>();
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement("SELECT * FROM clientes ORDER BY nome");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                clientes.add(mapear(rs));
+            }
+            rs.close();
+            ps.close();
+            c.close();
+            return clientes;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel listar clientes: " + ex.getMessage(), ex);
+        }
+    }
+
+    public Cliente buscarPorId(int id) {
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement("SELECT * FROM clientes WHERE id = ?");
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            Cliente cliente = rs.next() ? mapear(rs) : null;
+            rs.close();
+            ps.close();
+            c.close();
+            return cliente;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel buscar cliente: " + ex.getMessage(), ex);
+        }
+    }
+
+    public boolean existeDocumento(String documento) {
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement("SELECT COUNT(*) FROM clientes WHERE documento = ?");
+            ps.setString(1, Cliente.limparDocumento(documento));
+            ResultSet rs = ps.executeQuery();
+            boolean existe = rs.next() && rs.getInt(1) > 0;
+            rs.close();
+            ps.close();
+            c.close();
+            return existe;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel validar documento: " + ex.getMessage(), ex);
+        }
+    }
+
+    public void excluir(int id) {
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement("DELETE FROM clientes WHERE id = ?");
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            ps.close();
+            c.close();
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel excluir cliente: " + ex.getMessage(), ex);
+        }
+    }
+
+    private Cliente mapear(ResultSet rs) throws Exception {
+        return new Cliente(
+                rs.getInt("id"),
+                rs.getString("nome"),
+                rs.getString("documento"),
+                rs.getString("telefone"),
+                rs.getString("email"),
+                rs.getString("endereco"));
+    }
+}
+
+//orcamentodao.java
+package br.com.g4.orcamentos.repository;
+
+import br.com.g4.orcamentos.database.Database;
+import br.com.g4.orcamentos.domain.Cliente;
+import br.com.g4.orcamentos.domain.Orcamento;
+import br.com.g4.orcamentos.domain.Produto;
+import br.com.g4.orcamentos.domain.StatusOrcamento;
+import br.com.g4.orcamentos.domain.Vendedor;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+public class OrcamentoDAO {
+    private ClienteDAO clienteDAO = new ClienteDAO();
+    private VendedorDAO vendedorDAO = new VendedorDAO();
+    private ProdutoDAO produtoDAO = new ProdutoDAO();
+
+    public Orcamento salvar(Orcamento orcamento) {
+        String sql = "INSERT INTO orcamentos (cliente_id, vendedor_id, status, criado_em) VALUES (?, ?, ?, ?)";
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setInt(1, orcamento.getCliente().getId());
+            ps.setInt(2, orcamento.getVendedor().getId());
+            ps.setString(3, orcamento.getStatus().name());
+            ps.setString(4, orcamento.getCriadoEm().toString());
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                orcamento.setId(rs.getInt(1));
+            }
+            rs.close();
+            ps.close();
+            for (Produto produto : orcamento.getProdutos()) {
+                vincularProduto(c, orcamento.getId(), produto.getId());
+            }
+            c.close();
+            return orcamento;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel salvar orcamento: " + ex.getMessage(), ex);
+        }
+    }
+
+    public List<Orcamento> listar() {
+        List<Orcamento> orcamentos = new ArrayList<Orcamento>();
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement("SELECT * FROM orcamentos ORDER BY id DESC");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Orcamento orcamento = mapear(rs);
+                orcamento.setProdutos(listarProdutos(c, orcamento.getId()));
+                orcamentos.add(orcamento);
+            }
+            rs.close();
+            ps.close();
+            c.close();
+            return orcamentos;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel listar orcamentos: " + ex.getMessage(), ex);
+        }
+    }
+
+    public void atualizarStatus(int id, StatusOrcamento status) {
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement("UPDATE orcamentos SET status = ? WHERE id = ?");
+            ps.setString(1, status.name());
+            ps.setInt(2, id);
+            ps.executeUpdate();
+            ps.close();
+            c.close();
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel atualizar status: " + ex.getMessage(), ex);
+        }
+    }
+
+    public void excluir(int id) {
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement limpar = c.prepareStatement("DELETE FROM orcamento_produtos WHERE orcamento_id = ?");
+            limpar.setInt(1, id);
+            limpar.executeUpdate();
+            limpar.close();
+            PreparedStatement ps = c.prepareStatement("DELETE FROM orcamentos WHERE id = ?");
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            ps.close();
+            c.close();
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel excluir orcamento: " + ex.getMessage(), ex);
+        }
+    }
+
+    private void vincularProduto(Connection c, int orcamentoId, int produtoId) throws Exception {
+        PreparedStatement ps = c.prepareStatement("INSERT OR IGNORE INTO orcamento_produtos (orcamento_id, produto_id) VALUES (?, ?)");
+        ps.setInt(1, orcamentoId);
+        ps.setInt(2, produtoId);
+        ps.executeUpdate();
+        ps.close();
+    }
+
+    private List<Produto> listarProdutos(Connection c, int orcamentoId) throws Exception {
+        List<Produto> produtos = new ArrayList<Produto>();
+        PreparedStatement ps = c.prepareStatement("SELECT produto_id FROM orcamento_produtos WHERE orcamento_id = ?");
+        ps.setInt(1, orcamentoId);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            Produto produto = produtoDAO.buscarPorId(rs.getInt("produto_id"));
+            if (produto != null) {
+                produtos.add(produto);
+            }
+        }
+        rs.close();
+        ps.close();
+        return produtos;
+    }
+
+    private Orcamento mapear(ResultSet rs) throws Exception {
+        Cliente cliente = clienteDAO.buscarPorId(rs.getInt("cliente_id"));
+        Vendedor vendedor = vendedorDAO.buscarPorId(rs.getInt("vendedor_id"));
+        return new Orcamento(
+                rs.getInt("id"),
+                cliente,
+                vendedor,
+                StatusOrcamento.valueOf(rs.getString("status")),
+                LocalDateTime.parse(rs.getString("criado_em")));
+    }
+}
+
+//produtodao.java
+package br.com.g4.orcamentos.repository;
+
+import br.com.g4.orcamentos.database.Database;
+import br.com.g4.orcamentos.domain.Cortina;
+import br.com.g4.orcamentos.domain.Produto;
+import br.com.g4.orcamentos.domain.Toldo;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ProdutoDAO {
+    public Produto salvar(Produto produto) {
+        String sql = "INSERT INTO produtos (categoria, largura, altura, material, tipo, cor, tecido, preco_m2) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, produto.getCategoria());
+            ps.setDouble(2, produto.getLargura());
+            ps.setDouble(3, produto.getAltura());
+            ps.setString(4, produto.getMaterial());
+            ps.setString(5, produto.getTipo());
+            ps.setString(6, produto.getCor());
+            ps.setString(7, produto.getTecido());
+            ps.setDouble(8, produto.getPrecoM2());
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                produto.setId(rs.getInt(1));
+            }
+            rs.close();
+            ps.close();
+            c.close();
+            return produto;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel salvar produto: " + ex.getMessage(), ex);
+        }
+    }
+
+    public List<Produto> listar() {
+        List<Produto> produtos = new ArrayList<Produto>();
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement("SELECT * FROM produtos ORDER BY id DESC");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                produtos.add(mapear(rs));
+            }
+            rs.close();
+            ps.close();
+            c.close();
+            return produtos;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel listar produtos: " + ex.getMessage(), ex);
+        }
+    }
+
+    public Produto buscarPorId(int id) {
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement("SELECT * FROM produtos WHERE id = ?");
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            Produto produto = rs.next() ? mapear(rs) : null;
+            rs.close();
+            ps.close();
+            c.close();
+            return produto;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel buscar produto: " + ex.getMessage(), ex);
+        }
+    }
+
+    public void excluir(int id) {
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement("DELETE FROM produtos WHERE id = ?");
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            ps.close();
+            c.close();
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel excluir produto: " + ex.getMessage(), ex);
+        }
+    }
+
+    private Produto mapear(ResultSet rs) throws Exception {
+        Produto produto;
+        if ("TOLDO".equals(rs.getString("categoria"))) {
+            produto = new Toldo(
+                    rs.getDouble("largura"),
+                    rs.getDouble("altura"),
+                    rs.getString("material"),
+                    rs.getString("tipo"),
+                    rs.getString("cor"));
+        } else {
+            produto = new Cortina(
+                    rs.getDouble("largura"),
+                    rs.getDouble("altura"),
+                    rs.getString("tecido"));
+        }
+        produto.setId(rs.getInt("id"));
+        return produto;
+    }
+}
+
+//vendedordao.java
+package br.com.g4.orcamentos.repository;
+
+import br.com.g4.orcamentos.database.Database;
+import br.com.g4.orcamentos.domain.Vendedor;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+public class VendedorDAO {
+    public Vendedor salvar(Vendedor vendedor) {
+        String sql = "INSERT INTO vendedores (nome, telefone, email, percentual_comissao) VALUES (?, ?, ?, ?)";
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, vendedor.getNome());
+            ps.setString(2, vendedor.getTelefone());
+            ps.setString(3, vendedor.getEmail());
+            ps.setDouble(4, vendedor.getPercentualComissao());
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                vendedor.setId(rs.getInt(1));
+            }
+            rs.close();
+            ps.close();
+            c.close();
+            return vendedor;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel salvar vendedor: " + ex.getMessage(), ex);
+        }
+    }
+
+    public List<Vendedor> listar() {
+        List<Vendedor> vendedores = new ArrayList<Vendedor>();
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement("SELECT * FROM vendedores ORDER BY nome");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                vendedores.add(mapear(rs));
+            }
+            rs.close();
+            ps.close();
+            c.close();
+            return vendedores;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel listar vendedores: " + ex.getMessage(), ex);
+        }
+    }
+
+    public Vendedor buscarPorId(int id) {
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement("SELECT * FROM vendedores WHERE id = ?");
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            Vendedor vendedor = rs.next() ? mapear(rs) : null;
+            rs.close();
+            ps.close();
+            c.close();
+            return vendedor;
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel buscar vendedor: " + ex.getMessage(), ex);
+        }
+    }
+
+    public void excluir(int id) {
+        try {
+            Connection c = Database.getConnection();
+            PreparedStatement ps = c.prepareStatement("DELETE FROM vendedores WHERE id = ?");
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            ps.close();
+            c.close();
+        } catch (Exception ex) {
+            throw new IllegalStateException("Nao foi possivel excluir vendedor: " + ex.getMessage(), ex);
+        }
+    }
+
+    private Vendedor mapear(ResultSet rs) throws Exception {
+        return new Vendedor(
+                rs.getInt("id"),
+                rs.getString("nome"),
+                rs.getString("telefone"),
+                rs.getString("email"),
+                rs.getDouble("percentual_comissao"));
+    }
+}
+
+//service
+//sistemaservice.java
+package br.com.g4.orcamentos.service;
+
+import br.com.g4.orcamentos.domain.Cliente;
+import br.com.g4.orcamentos.domain.Cortina;
+import br.com.g4.orcamentos.domain.Orcamento;
+import br.com.g4.orcamentos.domain.Produto;
+import br.com.g4.orcamentos.domain.StatusOrcamento;
+import br.com.g4.orcamentos.domain.Toldo;
+import br.com.g4.orcamentos.domain.Vendedor;
+import br.com.g4.orcamentos.repository.ClienteDAO;
+import br.com.g4.orcamentos.repository.OrcamentoDAO;
+import br.com.g4.orcamentos.repository.ProdutoDAO;
+import br.com.g4.orcamentos.repository.VendedorDAO;
+
+import java.util.List;
+
+public class SistemaService {
+    private ClienteDAO clienteDAO = new ClienteDAO();
+    private VendedorDAO vendedorDAO = new VendedorDAO();
+    private ProdutoDAO produtoDAO = new ProdutoDAO();
+    private OrcamentoDAO orcamentoDAO = new OrcamentoDAO();
+
+    public Cliente cadastrarCliente(String nome, String documento, String telefone, String email, String endereco) {
+        Cliente cliente = new Cliente(nome, documento, telefone, email, endereco);
+        if (clienteDAO.existeDocumento(cliente.getDocumento())) {
+            throw new IllegalArgumentException("CPF/CNPJ ja cadastrado.");
+        }
+        return clienteDAO.salvar(cliente);
+    }
+
+    public Vendedor cadastrarVendedor(String nome, String telefone, String email, double percentualComissao) {
+        return vendedorDAO.salvar(new Vendedor(nome, telefone, email, percentualComissao));
+    }
+
+    public Produto cadastrarToldo(double largura, double altura, String material, String tipo, String cor) {
+        return produtoDAO.salvar(new Toldo(largura, altura, material, tipo, cor));
+    }
+
+    public Produto cadastrarCortina(double largura, double altura, String tecido) {
+        return produtoDAO.salvar(new Cortina(largura, altura, tecido));
+    }
+
+    public Orcamento criarOrcamento(Cliente cliente, Vendedor vendedor, List<Produto> produtos) {
+        Orcamento orcamento = vendedor.criarOrcamento(cliente);
+        for (Produto produto : produtos) {
+            orcamento.addProduto(produto);
+        }
+        return orcamentoDAO.salvar(orcamento);
+    }
+
+    public void atualizarStatus(Orcamento orcamento, StatusOrcamento status) {
+        orcamento.alterarStatus(status);
+        orcamentoDAO.atualizarStatus(orcamento.getId(), status);
+    }
+
+    public List<Cliente> listarClientes() {
+        return clienteDAO.listar();
+    }
+
+    public List<Vendedor> listarVendedores() {
+        return vendedorDAO.listar();
+    }
+
+    public List<Produto> listarProdutos() {
+        return produtoDAO.listar();
+    }
+
+    public List<Orcamento> listarOrcamentos() {
+        return orcamentoDAO.listar();
+    }
+
+    public void excluirCliente(Cliente cliente) {
+        if (cliente != null && cliente.getId() != null) {
+            clienteDAO.excluir(cliente.getId());
+        }
+    }
+
+    public void excluirVendedor(Vendedor vendedor) {
+        if (vendedor != null && vendedor.getId() != null) {
+            vendedorDAO.excluir(vendedor.getId());
+        }
+    }
+
+    public void excluirProduto(Produto produto) {
+        if (produto != null && produto.getId() != null) {
+            produtoDAO.excluir(produto.getId());
+        }
+    }
+
+    public void excluirOrcamento(Orcamento orcamento) {
+        if (orcamento != null && orcamento.getId() != null) {
+            orcamentoDAO.excluir(orcamento.getId());
+        }
+    }
+}
+
+//mainapp.java
+package br.com.g4.orcamentos;
+
+import br.com.g4.orcamentos.database.Database;
+import br.com.g4.orcamentos.domain.Cliente;
+import br.com.g4.orcamentos.domain.Orcamento;
+import br.com.g4.orcamentos.domain.Produto;
+import br.com.g4.orcamentos.domain.StatusOrcamento;
+import br.com.g4.orcamentos.domain.Vendedor;
+import br.com.g4.orcamentos.service.SistemaService;
+import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainApp extends Application {
+    private SistemaService service = new SistemaService();
+
+    private ObservableList<Cliente> clientes = FXCollections.observableArrayList();
+    private ObservableList<Vendedor> vendedores = FXCollections.observableArrayList();
+    private ObservableList<Produto> produtos = FXCollections.observableArrayList();
+    private ObservableList<Orcamento> orcamentos = FXCollections.observableArrayList();
+
+    private ComboBox<Cliente> comboClienteOrcamento = new ComboBox<Cliente>();
+    private ComboBox<Vendedor> comboVendedorOrcamento = new ComboBox<Vendedor>();
+    private ListView<Produto> listaProdutosOrcamento = new ListView<Produto>();
+    private TableView<Orcamento> tabelaOrcamentos = new TableView<Orcamento>();
+
+    public void start(Stage stage) {
+        Database.inicializar();
+        carregarDados();
+
+        TabPane abas = new TabPane();
+        abas.getTabs().add(criarAbaClientes());
+        abas.getTabs().add(criarAbaVendedores());
+        abas.getTabs().add(criarAbaProdutos());
+        abas.getTabs().add(criarAbaOrcamentos());
+
+        BorderPane root = new BorderPane();
+        Label titulo = new Label("Sistema de Gestao de Orcamentos - Toldos e Cortinas");
+        titulo.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-padding: 16 16 8 16;");
+        root.setTop(titulo);
+        root.setCenter(abas);
+
+        Scene scene = new Scene(root, 1120, 720);
+        stage.setTitle("Gestao de Orcamentos");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    private Tab criarAbaClientes() {
+        TextField nome = campo("Nome");
+        TextField documento = campo("CPF ou CNPJ");
+        TextField telefone = campo("Telefone");
+        TextField email = campo("Email");
+        TextField endereco = campo("Endereco");
+
+        Button salvar = new Button("Cadastrar cliente");
+        Button excluir = new Button("Excluir selecionado");
+
+        TableView<Cliente> tabela = new TableView<Cliente>(clientes);
+        tabela.getColumns().add(coluna("ID", "id", 70));
+        tabela.getColumns().add(coluna("Nome", "nome", 220));
+        tabela.getColumns().add(coluna("Documento", "documento", 150));
+        tabela.getColumns().add(coluna("Telefone", "telefone", 140));
+        tabela.getColumns().add(coluna("Email", "email", 220));
+        tabela.getColumns().add(coluna("Endereco", "endereco", 260));
+
+        salvar.setOnAction(e -> executar("Cliente cadastrado.", () -> {
+            service.cadastrarCliente(nome.getText(), documento.getText(), telefone.getText(), email.getText(), endereco.getText());
+            limpar(nome, documento, telefone, email, endereco);
+            carregarDados();
+        }));
+
+        excluir.setOnAction(e -> executar("Cliente excluido.", () -> {
+            service.excluirCliente(tabela.getSelectionModel().getSelectedItem());
+            carregarDados();
+        }));
+
+        VBox conteudo = new VBox(12, formulario(new Label("Novo cliente"), nome, documento, telefone, email, endereco, salvar, excluir), tabela);
+        VBox.setVgrow(tabela, Priority.ALWAYS);
+        return aba("Clientes", conteudo);
+    }
+
+    private Tab criarAbaVendedores() {
+        TextField nome = campo("Nome");
+        TextField telefone = campo("Telefone");
+        TextField email = campo("Email");
+        TextField comissao = campo("Comissao %");
+
+        Button salvar = new Button("Cadastrar vendedor");
+        Button excluir = new Button("Excluir selecionado");
+
+        TableView<Vendedor> tabela = new TableView<Vendedor>(vendedores);
+        tabela.getColumns().add(coluna("ID", "id", 70));
+        tabela.getColumns().add(coluna("Nome", "nome", 250));
+        tabela.getColumns().add(coluna("Telefone", "telefone", 160));
+        tabela.getColumns().add(coluna("Email", "email", 260));
+        tabela.getColumns().add(coluna("Comissao", "percentualComissao", 120));
+
+        salvar.setOnAction(e -> executar("Vendedor cadastrado.", () -> {
+            service.cadastrarVendedor(nome.getText(), telefone.getText(), email.getText(), numero(comissao.getText()));
+            limpar(nome, telefone, email, comissao);
+            carregarDados();
+        }));
+
+        excluir.setOnAction(e -> executar("Vendedor excluido.", () -> {
+            service.excluirVendedor(tabela.getSelectionModel().getSelectedItem());
+            carregarDados();
+        }));
+
+        VBox conteudo = new VBox(12, formulario(new Label("Novo vendedor"), nome, telefone, email, comissao, salvar, excluir), tabela);
+        VBox.setVgrow(tabela, Priority.ALWAYS);
+        return aba("Vendedores", conteudo);
+    }
+
+    private Tab criarAbaProdutos() {
+        ComboBox<String> categoria = new ComboBox<String>(FXCollections.observableArrayList("TOLDO", "CORTINA"));
+        categoria.getSelectionModel().select("TOLDO");
+        TextField largura = campo("Largura em metros");
+        TextField altura = campo("Altura em metros");
+        TextField material = campo("Material do toldo");
+        TextField tipo = campo("Tipo do toldo");
+        TextField cor = campo("Cor do toldo");
+        TextField tecido = campo("Tecido da cortina");
+
+        Button salvar = new Button("Cadastrar produto");
+        Button excluir = new Button("Excluir selecionado");
+
+        TableView<Produto> tabela = new TableView<Produto>(produtos);
+        tabela.getColumns().add(coluna("ID", "id", 70));
+        tabela.getColumns().add(coluna("Categoria", "categoria", 110));
+        tabela.getColumns().add(coluna("Largura", "largura", 90));
+        tabela.getColumns().add(coluna("Altura", "altura", 90));
+        tabela.getColumns().add(coluna("Material", "material", 140));
+        tabela.getColumns().add(coluna("Tipo", "tipo", 140));
+        tabela.getColumns().add(coluna("Cor", "cor", 120));
+        tabela.getColumns().add(coluna("Tecido", "tecido", 140));
+        tabela.getColumns().add(coluna("Preco m2", "precoM2", 100));
+        TableColumn<Produto, String> total = new TableColumn<Produto, String>("Total");
+        total.setCellValueFactory(c -> new SimpleStringProperty(moeda(c.getValue().calcularPreco())));
+        total.setPrefWidth(120);
+        tabela.getColumns().add(total);
+
+        salvar.setOnAction(e -> executar("Produto cadastrado.", () -> {
+            if ("TOLDO".equals(categoria.getValue())) {
+                service.cadastrarToldo(numero(largura.getText()), numero(altura.getText()), material.getText(), tipo.getText(), cor.getText());
+            } else {
+                service.cadastrarCortina(numero(largura.getText()), numero(altura.getText()), tecido.getText());
+            }
+            limpar(largura, altura, material, tipo, cor, tecido);
+            carregarDados();
+        }));
+
+        excluir.setOnAction(e -> executar("Produto excluido.", () -> {
+            service.excluirProduto(tabela.getSelectionModel().getSelectedItem());
+            carregarDados();
+        }));
+
+        GridPane grid = grid();
+        grid.add(new Label("Categoria"), 0, 0);
+        grid.add(categoria, 1, 0);
+        grid.add(largura, 2, 0);
+        grid.add(altura, 3, 0);
+        grid.add(material, 0, 1);
+        grid.add(tipo, 1, 1);
+        grid.add(cor, 2, 1);
+        grid.add(tecido, 3, 1);
+        grid.add(new HBox(8, salvar, excluir), 0, 2, 4, 1);
+
+        VBox conteudo = new VBox(12, new Label("Novo produto"), grid, tabela);
+        VBox.setVgrow(tabela, Priority.ALWAYS);
+        return aba("Produtos", conteudo);
+    }
+
+    private Tab criarAbaOrcamentos() {
+        comboClienteOrcamento.setItems(clientes);
+        comboVendedorOrcamento.setItems(vendedores);
+        listaProdutosOrcamento.setItems(produtos);
+        listaProdutosOrcamento.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        listaProdutosOrcamento.setPrefHeight(170);
+
+        Button criar = new Button("Criar orcamento");
+        Button excluir = new Button("Excluir selecionado");
+        ComboBox<StatusOrcamento> status = new ComboBox<StatusOrcamento>(FXCollections.observableArrayList(StatusOrcamento.values()));
+        status.getSelectionModel().select(StatusOrcamento.APROVADO);
+        Button atualizarStatus = new Button("Atualizar status");
+
+        tabelaOrcamentos.setItems(orcamentos);
+        tabelaOrcamentos.getColumns().add(coluna("ID", "id", 70));
+        TableColumn<Orcamento, String> cliente = new TableColumn<Orcamento, String>("Cliente");
+        cliente.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getCliente().getNome()));
+        cliente.setPrefWidth(220);
+        TableColumn<Orcamento, String> vendedor = new TableColumn<Orcamento, String>("Vendedor");
+        vendedor.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getVendedor().getNome()));
+        vendedor.setPrefWidth(200);
+        tabelaOrcamentos.getColumns().add(cliente);
+        tabelaOrcamentos.getColumns().add(vendedor);
+        tabelaOrcamentos.getColumns().add(coluna("Status", "status", 130));
+        tabelaOrcamentos.getColumns().add(coluna("Itens", "totalProdutos", 80));
+        TableColumn<Orcamento, String> valor = new TableColumn<Orcamento, String>("Total");
+        valor.setCellValueFactory(c -> new SimpleStringProperty(moeda(c.getValue().calcularTotal())));
+        valor.setPrefWidth(130);
+        TableColumn<Orcamento, String> comissao = new TableColumn<Orcamento, String>("Comissao");
+        comissao.setCellValueFactory(c -> new SimpleStringProperty(moeda(c.getValue().getComissaoVendedor())));
+        comissao.setPrefWidth(130);
+        tabelaOrcamentos.getColumns().add(valor);
+        tabelaOrcamentos.getColumns().add(comissao);
+
+        criar.setOnAction(e -> executar("Orcamento criado.", () -> {
+            Cliente clienteSelecionado = comboClienteOrcamento.getValue();
+            Vendedor vendedorSelecionado = comboVendedorOrcamento.getValue();
+            List<Produto> produtosSelecionados = new ArrayList<Produto>(listaProdutosOrcamento.getSelectionModel().getSelectedItems());
+            if (clienteSelecionado == null || vendedorSelecionado == null || produtosSelecionados.isEmpty()) {
+                throw new IllegalArgumentException("Selecione cliente, vendedor e pelo menos um produto.");
+            }
+            service.criarOrcamento(clienteSelecionado, vendedorSelecionado, produtosSelecionados);
+            listaProdutosOrcamento.getSelectionModel().clearSelection();
+            carregarDados();
+        }));
+
+        atualizarStatus.setOnAction(e -> executar("Status atualizado.", () -> {
+            Orcamento selecionado = tabelaOrcamentos.getSelectionModel().getSelectedItem();
+            if (selecionado == null) {
+                throw new IllegalArgumentException("Selecione um orcamento.");
+            }
+            service.atualizarStatus(selecionado, status.getValue());
+            carregarDados();
+        }));
+
+        excluir.setOnAction(e -> executar("Orcamento excluido.", () -> {
+            service.excluirOrcamento(tabelaOrcamentos.getSelectionModel().getSelectedItem());
+            carregarDados();
+        }));
+
+        GridPane grid = grid();
+        grid.add(new Label("Cliente"), 0, 0);
+        grid.add(comboClienteOrcamento, 1, 0);
+        grid.add(new Label("Vendedor"), 2, 0);
+        grid.add(comboVendedorOrcamento, 3, 0);
+        grid.add(new Label("Produtos"), 0, 1);
+        grid.add(listaProdutosOrcamento, 1, 1, 3, 1);
+        grid.add(new HBox(8, criar, excluir, status, atualizarStatus), 1, 2, 3, 1);
+
+        VBox conteudo = new VBox(12, new Label("Novo orcamento"), grid, tabelaOrcamentos);
+        VBox.setVgrow(tabelaOrcamentos, Priority.ALWAYS);
+        return aba("Orcamentos", conteudo);
+    }
+
+    private void carregarDados() {
+        clientes.setAll(service.listarClientes());
+        vendedores.setAll(service.listarVendedores());
+        produtos.setAll(service.listarProdutos());
+        orcamentos.setAll(service.listarOrcamentos());
+    }
+
+    private TextField campo(String prompt) {
+        TextField campo = new TextField();
+        campo.setPromptText(prompt);
+        campo.setPrefWidth(180);
+        return campo;
+    }
+
+    private GridPane grid() {
+        GridPane grid = new GridPane();
+        grid.setHgap(8);
+        grid.setVgap(8);
+        grid.setPadding(new Insets(12));
+        return grid;
+    }
+
+    private VBox formulario(Label titulo, TextField a, TextField b, TextField c, TextField d, TextField e, Button salvar, Button excluir) {
+        GridPane grid = grid();
+        grid.add(a, 0, 0);
+        grid.add(b, 1, 0);
+        grid.add(c, 2, 0);
+        grid.add(d, 3, 0);
+        grid.add(e, 0, 1, 2, 1);
+        grid.add(new HBox(8, salvar, excluir), 2, 1, 2, 1);
+        return new VBox(8, titulo, grid);
+    }
+
+    private VBox formulario(Label titulo, TextField a, TextField b, TextField c, TextField d, Button salvar, Button excluir) {
+        GridPane grid = grid();
+        grid.add(a, 0, 0);
+        grid.add(b, 1, 0);
+        grid.add(c, 2, 0);
+        grid.add(d, 3, 0);
+        grid.add(new HBox(8, salvar, excluir), 0, 1, 4, 1);
+        return new VBox(8, titulo, grid);
+    }
+
+    private <S, T> TableColumn<S, T> coluna(String titulo, String propriedade, int largura) {
+        TableColumn<S, T> coluna = new TableColumn<S, T>(titulo);
+        coluna.setCellValueFactory(new PropertyValueFactory<S, T>(propriedade));
+        coluna.setPrefWidth(largura);
+        return coluna;
+    }
+
+    private Tab aba(String titulo, VBox conteudo) {
+        conteudo.setPadding(new Insets(16));
+        Tab tab = new Tab(titulo, conteudo);
+        tab.setClosable(false);
+        return tab;
+    }
+
+    private void limpar(TextField... campos) {
+        for (TextField campo : campos) {
+            campo.clear();
+        }
+    }
+
+    private double numero(String texto) {
+        if (texto == null || texto.trim().isEmpty()) {
+            throw new IllegalArgumentException("Informe todos os campos numericos.");
+        }
+        return Double.parseDouble(texto.replace(",", "."));
+    }
+
+    private String moeda(double valor) {
+        return "R$ " + String.format("%.2f", valor);
+    }
+
+    private void executar(String sucesso, Acao acao) {
+        try {
+            acao.executar();
+            alerta(Alert.AlertType.INFORMATION, "Sucesso", sucesso);
+        } catch (Exception ex) {
+            alerta(Alert.AlertType.ERROR, "Atencao", ex.getMessage());
+        }
+    }
+
+    private void alerta(Alert.AlertType tipo, String titulo, String mensagem) {
+        Alert alert = new Alert(tipo);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensagem);
+        alert.showAndWait();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    private interface Acao {
+        void executar();
+    }
+}
+
+
+//programav1.java
+import java.util.ArrayList;
+import java.util.List;
+
+interface Validavel {
+    boolean validar();
+}
+
+class Cliente implements Validavel {
+    private String nome;
+    private String documento;
+
+    public Cliente(String nome, String documento) {
+        this.nome = nome;
+        this.documento = documento == null ? "" : documento.replaceAll("[^0-9]", "");
+        if (!validar()) {
+            throw new IllegalArgumentException("Documento invalido. Use CPF com 11 digitos ou CNPJ com 14 digitos.");
+        }
+    }
+
+    public boolean validar() {
+        return documento.length() == 11 || documento.length() == 14;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
     public String getDocumento() {
         return documento;
     }
 }
 
-// PRODUTOS
-public abstract class Produto {
-
+abstract class Produto {
     protected double largura;
     protected double altura;
     protected double precoM2;
 
-    public Produto(double largura,
-                   double altura) {
-
+    public Produto(double largura, double altura) {
+        if (largura <= 0 || altura <= 0) {
+            throw new IllegalArgumentException("Largura e altura devem ser maiores que zero.");
+        }
         this.largura = largura;
         this.altura = altura;
     }
 
     public double getArea() {
-
         return largura * altura;
     }
 
     public double calcularPreco() {
-
-        return getArea() * this.precoM2;
-    }
-
-    public double getLargura() {
-        return this.largura;
-    }
-
-    public double getAltura() {
-        return this.altura;
-    }
-
-    public double getPrecoM2() {
-        return this.precoM2;
+        return getArea() * precoM2;
     }
 }
 
-//TOLDO
-public class Toldo extends Produto {
-
+class Toldo extends Produto {
     private String material;
     private String tipo;
     private String cor;
 
-    public Toldo(double largura,
-                 double altura,
-                 String material,
-                 String tipo,
-                 String cor) {
-
+    public Toldo(double largura, double altura, String material, String tipo, String cor) {
         super(largura, altura);
-
         this.material = material;
         this.tipo = tipo;
         this.cor = cor;
+        precoM2 = precoMaterial(material) + precoTipo(tipo);
+    }
 
-        switch(material.toLowerCase()) {
+    private double precoMaterial(String valor) {
+        String base = valor == null ? "" : valor.toLowerCase();
+        if (base.equals("madeira")) return 250;
+        if (base.equals("aluminio")) return 180;
+        if (base.equals("aco")) return 220;
+        return 150;
+    }
 
-            case "madeira":
-                precoM2 += 250;
-                break;
-
-            case "aluminio":
-                precoM2 += 180;
-                break;
-
-            case "aco":
-                precoM2 += 220;
-                break;
-
-            default:
-                precoM2 += 150;
-        }
-
-        switch(tipo.toLowerCase()) {
-
-            case "retratil":
-                precoM2 += 120;
-                break;
-
-            case "reto":
-                precoM2 += 50;
-                break;
-
-            case "curvo":
-                precoM2 += 90;
-                break;
-        }
+    private double precoTipo(String valor) {
+        String base = valor == null ? "" : valor.toLowerCase();
+        if (base.equals("retratil")) return 120;
+        if (base.equals("reto")) return 50;
+        if (base.equals("curvo")) return 90;
+        return 60;
     }
 }
 
-//CORTINA
-public class Cortina extends Produto {
+class Cortina extends Produto {
+    private String tecido;
 
-    protected String tecido;
-
-    public Cortina(double largura,
-                   double altura,
-                   String tecido) {
-
+    public Cortina(double largura, double altura, String tecido) {
         super(largura, altura);
-
         this.tecido = tecido;
-
-        switch(tecido.toLowerCase()) {
-
-            case "voil":
-                precoM2 = 40;
-                break;
-
-            case "linho":
-                precoM2 = 70;
-                break;
-
-            case "blackout":
-                precoM2 = 90;
-                break;
-
-            default:
-                precoM2 = 50;
-        }
-    }
-    public String getTecido(){
-        return this.tecido;
+        String base = tecido == null ? "" : tecido.toLowerCase();
+        if (base.equals("voil")) precoM2 = 40;
+        else if (base.equals("linho")) precoM2 = 70;
+        else if (base.equals("blackout")) precoM2 = 90;
+        else precoM2 = 50;
     }
 }
 
-//ORÇAMENTO
-import java.util.ArrayList;
-import java.util.List;
-
-public class Orcamento {
-
-    private Integer id;
+class Pedido {
     private Cliente cliente;
+    private List<Produto> itens = new ArrayList<Produto>();
 
-    private List<Produto> produtos =
-            new ArrayList<>();
-
-    public Orcamento(Cliente cliente) {
-
+    public Pedido(Cliente cliente) {
         this.cliente = cliente;
     }
 
-    public void addProduto(
-            Produto produto) {
-
-        this.produtos.add(produto);
+    public void adicionarItem(Produto produto) {
+        itens.add(produto);
     }
 
     public double calcularTotal() {
-
         double total = 0;
-
-        for(Produto p : produtos) {
-
-            total += p.calcularPreco();
+        for (Produto produto : itens) {
+            total += produto.calcularPreco();
         }
-
         return total;
-    }
-    public Cliente getCliente(){
-        return this.cliente;
-    }
-    public int getTotalProdutos(){
-        return this.produtos.size();
     }
 }
 
-//Verificador
-import java.util.ArrayList;
-import java.util.List;
+class VerificadorCadastro {
+    private List<Cliente> clientesCadastrados = new ArrayList<Cliente>();
 
-public class VerificadorCadastro {
-    private List<Cliente> clientesCadastrados = new ArrayList<>();
-    
     public boolean adicionarCliente(Cliente novoCliente) {
-        for (Cliente a : clientesCadastrados) {
-            if (a.getDocumento().equals(novoCliente.getDocumento())) {
-                System.out.println("Cadastro negado: documento ja cadastrado");
+        for (Cliente cliente : clientesCadastrados) {
+            if (cliente.getDocumento().equals(novoCliente.getDocumento())) {
                 return false;
             }
         }
         clientesCadastrados.add(novoCliente);
-        System.out.println("Cliente - " + novoCliente.getNome() + " - cadastrado com sucesso");
         return true;
     }
 }
 
-//Classe de Teste main
-public class Teste{
-    public static void main(String[]args){
-        System.out.println("--- Testes de funcionamento ---\n");
-        VerificadorCadastro verificador1= new VerificadorCadastro();
-        //adicao de clientes
-        System.out.println("--- Adicao de Clientes ---\n");
-        Cliente cliente1= new Cliente("Fulano da Silva", "123.456.789-10");
-        Cliente cliente2= new Cliente("Ciclano dos Santos", "12345678910");
-        Cliente cliente3= new Cliente("GynSOL", "12.345.678/0001-90");
-        //verificacao de clientes
-        System.out.println("--- Verificacao dos Clientes ---\n");
-        verificador1.adicionarCliente(cliente1);
-        verificador1.adicionarCliente(cliente2);
-        verificador1.adicionarCliente(cliente3);
-        //adicao de produtos
-        System.out.println("--- Adicao de Produtos ---\n");
-        Cortina cortina1= new Cortina(2, 2.5, "linho");
-        Toldo toldo1= new Toldo(3, 2, "aluminio", "retratil", "branco");
-        //criacao dos orcamentos
-        System.out.println("--- Geracao dos Orcamentos ---\n");
-        Orcamento orcamentoCliente1= new Orcamento(cliente1);
-        Orcamento orcamentoCliente3= new Orcamento(cliente3);
-        orcamentoCliente1.addProduto(cortina1);
-        orcamentoCliente1.addProduto(toldo1);
-        orcamentoCliente3.addProduto(cortina1);
-        //resultado final
-        System.out.println("Orcamento feito para: "+orcamentoCliente1.getCliente().getNome());
-        System.out.println("Quantidade de itens: "+orcamentoCliente1.getTotalProdutos());
-        System.out.println("Valor total do orcamento: "+String.format("%.2f",orcamentoCliente1.calcularTotal())+"R$\n");
-        System.out.println("Orcamento feito para: "+orcamentoCliente3.getCliente().getNome());
-        System.out.println("Quantidade de itens: "+orcamentoCliente3.getTotalProdutos());
-        System.out.println("Valor total do orcamento: "+String.format("%.2f",orcamentoCliente3.calcularTotal())+"R$");
-    }
-}
+public class ProgramaV1 {
+    public static void main(String[] args) {
+        Cliente cliente = new Cliente("Fulano da Silva", "123.456.789-10");
+        VerificadorCadastro verificador = new VerificadorCadastro();
+        System.out.println("Cliente cadastrado: " + verificador.adicionarCliente(cliente));
 
-//BANCO DE DADOS (TO USANDO SQLite) - ainda não tá pronto
-package database;
+        Pedido pedido = new Pedido(cliente);
+        pedido.adicionarItem(new Cortina(2, 2.5, "linho"));
+        pedido.adicionarItem(new Toldo(3, 2, "aluminio", "retratil", "branco"));
 
-import java.sql.*;
-
-public class ConnectionFactory {
-
-    private static final String URL =
-            "jdbc:sqlite:orcamentos.db";
-
-    public static Connection getConnection()
-            throws SQLException {
-
-        return DriverManager.getConnection(URL);
+        System.out.println("Total do pedido: R$ " + String.format("%.2f", pedido.calcularTotal()));
     }
 }
