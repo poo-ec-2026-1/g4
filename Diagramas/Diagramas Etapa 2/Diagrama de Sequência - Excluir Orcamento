@@ -1,0 +1,23 @@
+@startuml Sequencia_Excluir_Orcamento
+actor Vendedor
+
+participant "SistemaService" as Service
+participant "Orcamento" as Orc
+participant "OrcamentoDAO" as OrcDAO
+
+Vendedor -> Service: excluirOrcamento(orcamento)
+activate Service
+
+Service -> Orc: getId()
+activate Orc
+Orc --> Service: id
+deactivate Orc
+
+Service -> OrcDAO: excluir(id)
+activate OrcDAO
+OrcDAO --> Service
+deactivate OrcDAO
+
+Service --> Vendedor: Sucesso
+deactivate Service
+@enduml
