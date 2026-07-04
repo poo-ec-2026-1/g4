@@ -5,7 +5,6 @@ skinparam classAttributeIconSize 0
 skinparam linetype ortho
 left to right direction
 
-' Pacote para Interfaces
 package "Interfaces" {
   interface Validavel {
     + validar(): boolean
