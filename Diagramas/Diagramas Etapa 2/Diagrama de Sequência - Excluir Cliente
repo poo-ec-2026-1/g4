@@ -1,0 +1,23 @@
+@startuml Sequencia_Excluir_Cliente
+actor Vendedor
+
+participant "SistemaService" as Service
+participant "Cliente" as Cli
+participant "ClienteDAO" as CliDAO
+
+Vendedor -> Service: excluirCliente(cliente)
+activate Service
+
+Service -> Cli: getId()
+activate Cli
+Cli --> Service: id
+deactivate Cli
+
+Service -> CliDAO: excluir(id)
+activate CliDAO
+CliDAO --> Service
+deactivate CliDAO
+
+Service --> Vendedor: Sucesso
+deactivate Service
+@enduml
