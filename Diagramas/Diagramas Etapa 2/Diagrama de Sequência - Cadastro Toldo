@@ -1,0 +1,17 @@
+@startuml
+actor Vendedor
+
+participant "Toldo" as Tld
+participant "Produto" as Prod
+
+Vendedor -> Tld: new Toldo(largura, altura, material, tipo, cor)
+activate Tld
+
+Tld -> Prod: calcularPreco()
+activate Prod
+Prod --> Tld: precoCalculado
+deactivate Prod
+
+Tld --> Vendedor: Objeto Toldo instanciado
+deactivate Tld
+@enduml
