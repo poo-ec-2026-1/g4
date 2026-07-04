@@ -118,6 +118,8 @@ O diagrama de classe básico apresenta uma visão simplificada do domínio, dest
 
 <img width="1290" height="486" alt="DiagramaDeClasses-RD-V2" src="https://github.com/user-attachments/assets/852d1d87-fd28-4375-8e52-7971d6b34200" />
 
+<img width="3338" height="2064" alt="DiagramaDeClasses-V2" src="https://github.com/user-attachments/assets/95d9620d-fdb3-4abb-890b-c7961b721d95" />
+
 ### Diagrama de Sequência 
 
 Os diagramas de sequência detalham os principais fluxos de execução do sistema, como cadastro de cliente, cadastro de vendedor, cadastro de produtos, criação de orçamento, atualização de status e exclusões.
