@@ -631,20 +631,16 @@ public class ClienteDAO {
 
     public List<Cliente> listar() {
         List<Cliente> clientes = new ArrayList<Cliente>();
-        try {
-            Connection c = Database.getConnection();
+        try (Connection c = Database.getConnection();
             PreparedStatement ps = c.prepareStatement("SELECT * FROM clientes ORDER BY nome");
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                clientes.add(mapear(rs));
-            }
-            rs.close();
-            ps.close();
-            c.close();
-            return clientes;
+            ResultSet rs = ps.executeQuery()){
+            	while (rs.next()) {
+            		clientes.add(mapear(rs));
+            	}
         } catch (Exception ex) {
             throw new IllegalStateException("Nao foi possivel listar clientes: " + ex.getMessage(), ex);
         }
+        return clientes;
     }
 
     public Cliente buscarPorId(int id) {
@@ -754,22 +750,18 @@ public class OrcamentoDAO {
 
     public List<Orcamento> listar() {
         List<Orcamento> orcamentos = new ArrayList<Orcamento>();
-        try {
-            Connection c = Database.getConnection();
+        try (Connection c = Database.getConnection();
             PreparedStatement ps = c.prepareStatement("SELECT * FROM orcamentos ORDER BY id DESC");
-            ResultSet rs = ps.executeQuery();
+            ResultSet rs = ps.executeQuery()){
             while (rs.next()) {
                 Orcamento orcamento = mapear(rs);
                 orcamento.setProdutos(listarProdutos(c, orcamento.getId()));
                 orcamentos.add(orcamento);
             }
-            rs.close();
-            ps.close();
-            c.close();
-            return orcamentos;
         } catch (Exception ex) {
             throw new IllegalStateException("Nao foi possivel listar orcamentos: " + ex.getMessage(), ex);
         }
+        return orcamentos;
     }
 
     public void atualizarStatus(int id, StatusOrcamento status) {
@@ -884,20 +876,16 @@ public class ProdutoDAO {
 
     public List<Produto> listar() {
         List<Produto> produtos = new ArrayList<Produto>();
-        try {
-            Connection c = Database.getConnection();
+        try (Connection c = Database.getConnection();
             PreparedStatement ps = c.prepareStatement("SELECT * FROM produtos ORDER BY id DESC");
-            ResultSet rs = ps.executeQuery();
+            ResultSet rs = ps.executeQuery()){
             while (rs.next()) {
                 produtos.add(mapear(rs));
             }
-            rs.close();
-            ps.close();
-            c.close();
-            return produtos;
         } catch (Exception ex) {
             throw new IllegalStateException("Nao foi possivel listar produtos: " + ex.getMessage(), ex);
         }
+        return produtos;
     }
 
     public Produto buscarPorId(int id) {
@@ -988,20 +976,16 @@ public class VendedorDAO {
 
     public List<Vendedor> listar() {
         List<Vendedor> vendedores = new ArrayList<Vendedor>();
-        try {
-            Connection c = Database.getConnection();
+        try (Connection c = Database.getConnection();
             PreparedStatement ps = c.prepareStatement("SELECT * FROM vendedores ORDER BY nome");
-            ResultSet rs = ps.executeQuery();
+            ResultSet rs = ps.executeQuery()){
             while (rs.next()) {
                 vendedores.add(mapear(rs));
             }
-            rs.close();
-            ps.close();
-            c.close();
-            return vendedores;
         } catch (Exception ex) {
             throw new IllegalStateException("Nao foi possivel listar vendedores: " + ex.getMessage(), ex);
         }
+        return vendedores;
     }
 
     public Vendedor buscarPorId(int id) {
@@ -1510,154 +1494,5 @@ public class MainApp extends Application {
 
     private interface Acao {
         void executar();
-    }
-}
-
-
-//programav1.java
-import java.util.ArrayList;
-import java.util.List;
-
-interface Validavel {
-    boolean validar();
-}
-
-class Cliente implements Validavel {
-    private String nome;
-    private String documento;
-
-    public Cliente(String nome, String documento) {
-        this.nome = nome;
-        this.documento = documento == null ? "" : documento.replaceAll("[^0-9]", "");
-        if (!validar()) {
-            throw new IllegalArgumentException("Documento invalido. Use CPF com 11 digitos ou CNPJ com 14 digitos.");
-        }
-    }
-
-    public boolean validar() {
-        return documento.length() == 11 || documento.length() == 14;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public String getDocumento() {
-        return documento;
-    }
-}
-
-abstract class Produto {
-    protected double largura;
-    protected double altura;
-    protected double precoM2;
-
-    public Produto(double largura, double altura) {
-        if (largura <= 0 || altura <= 0) {
-            throw new IllegalArgumentException("Largura e altura devem ser maiores que zero.");
-        }
-        this.largura = largura;
-        this.altura = altura;
-    }
-
-    public double getArea() {
-        return largura * altura;
-    }
-
-    public double calcularPreco() {
-        return getArea() * precoM2;
-    }
-}
-
-class Toldo extends Produto {
-    private String material;
-    private String tipo;
-    private String cor;
-
-    public Toldo(double largura, double altura, String material, String tipo, String cor) {
-        super(largura, altura);
-        this.material = material;
-        this.tipo = tipo;
-        this.cor = cor;
-        precoM2 = precoMaterial(material) + precoTipo(tipo);
-    }
-
-    private double precoMaterial(String valor) {
-        String base = valor == null ? "" : valor.toLowerCase();
-        if (base.equals("madeira")) return 250;
-        if (base.equals("aluminio")) return 180;
-        if (base.equals("aco")) return 220;
-        return 150;
-    }
-
-    private double precoTipo(String valor) {
-        String base = valor == null ? "" : valor.toLowerCase();
-        if (base.equals("retratil")) return 120;
-        if (base.equals("reto")) return 50;
-        if (base.equals("curvo")) return 90;
-        return 60;
-    }
-}
-
-class Cortina extends Produto {
-    private String tecido;
-
-    public Cortina(double largura, double altura, String tecido) {
-        super(largura, altura);
-        this.tecido = tecido;
-        String base = tecido == null ? "" : tecido.toLowerCase();
-        if (base.equals("voil")) precoM2 = 40;
-        else if (base.equals("linho")) precoM2 = 70;
-        else if (base.equals("blackout")) precoM2 = 90;
-        else precoM2 = 50;
-    }
-}
-
-class Pedido {
-    private Cliente cliente;
-    private List<Produto> itens = new ArrayList<Produto>();
-
-    public Pedido(Cliente cliente) {
-        this.cliente = cliente;
-    }
-
-    public void adicionarItem(Produto produto) {
-        itens.add(produto);
-    }
-
-    public double calcularTotal() {
-        double total = 0;
-        for (Produto produto : itens) {
-            total += produto.calcularPreco();
-        }
-        return total;
-    }
-}
-
-class VerificadorCadastro {
-    private List<Cliente> clientesCadastrados = new ArrayList<Cliente>();
-
-    public boolean adicionarCliente(Cliente novoCliente) {
-        for (Cliente cliente : clientesCadastrados) {
-            if (cliente.getDocumento().equals(novoCliente.getDocumento())) {
-                return false;
-            }
-        }
-        clientesCadastrados.add(novoCliente);
-        return true;
-    }
-}
-
-public class ProgramaV1 {
-    public static void main(String[] args) {
-        Cliente cliente = new Cliente("Fulano da Silva", "123.456.789-10");
-        VerificadorCadastro verificador = new VerificadorCadastro();
-        System.out.println("Cliente cadastrado: " + verificador.adicionarCliente(cliente));
-
-        Pedido pedido = new Pedido(cliente);
-        pedido.adicionarItem(new Cortina(2, 2.5, "linho"));
-        pedido.adicionarItem(new Toldo(3, 2, "aluminio", "retratil", "branco"));
-
-        System.out.println("Total do pedido: R$ " + String.format("%.2f", pedido.calcularTotal()));
     }
 }
