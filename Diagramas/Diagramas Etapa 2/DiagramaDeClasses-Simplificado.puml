@@ -1,0 +1,81 @@
+@startuml Diagrama_Simplificado_README
+
+skinparam monochrome true
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+top to bottom direction
+
+abstract class Produto {
+  - id: Integer
+  # largura: double
+  # altura: double
+  # precoM2: double
+  + {abstract} getCategoria(): String
+  + getArea(): double
+  + calcularPreco(): double
+  + getResumo(): String
+}
+
+class Toldo {
+  - material: String
+  - tipo: String
+  - cor: String
+  + getCategoria(): String
+  - calcularValorMetro(): double
+}
+
+class Cortina {
+  - tecido: String
+  + getCategoria(): String
+}
+
+class Cliente {
+  - id: Integer
+  - nome: String
+  - documento: String
+  - telefone: String
+  - email: String
+  - endereco: String
+  + {static} limparDocumento(documento: String): String
+}
+
+class Vendedor {
+  - id: Integer
+  - nome: String
+  - telefone: String
+  - email: String
+  - percentualComissao: double
+  + criarOrcamento(cliente: Cliente): Orcamento
+  + calcularComissao(valorVenda: double): double
+}
+
+class Orcamento {
+  - id: Integer
+  - cliente: Cliente
+  - vendedor: Vendedor
+  - produtos: List<Produto>
+  - status: StatusOrcamento
+  - criadoEm: LocalDateTime
+  + addProduto(produto: Produto): void
+  + removerProduto(produto: Produto): void
+  + alterarStatus(novoStatus: StatusOrcamento): void
+  + calcularTotal(): double
+  + getComissaoVendedor(): double
+}
+
+enum StatusOrcamento {
+  EM_ANALISE
+  APROVADO
+  RECUSADO
+  CANCELADO
+}
+
+Toldo --|> Produto
+Cortina --|> Produto
+
+Orcamento --> Cliente
+Orcamento --> Vendedor
+Orcamento "1" *-- "*" Produto
+Orcamento --> StatusOrcamento
+
+@endlump
