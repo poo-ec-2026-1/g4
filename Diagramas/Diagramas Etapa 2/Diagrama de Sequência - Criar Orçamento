@@ -1,23 +1,40 @@
-@startuml Sequencia_Criar_Orçamento
+@startuml Sequencia_Criar_Orcamento_Completo_Sem_Loop
 actor Vendedor
 
 participant "Orcamento" as Orc
 participant "SistemaService" as Service
 participant "OrcamentoDAO" as OrcDAO
+participant "Database" as DB
+participant "ProdutoDAO" as ProdDAO
 
 Vendedor -> Orc: new Orcamento(cliente, vendedor, produtos, descricao)
 activate Orc
-note over Orc : O construtor calcula o valor total\nsomando os preços de todos os produtos
-Orc -> Service: criarOrcamento(orcamento)
+Orc --> Vendedor: instancia Orcamento
+deactivate Orc
+
+Vendedor -> Service: criarOrcamento(orcamento)
 activate Service
 
 Service -> OrcDAO: salvar(orcamento)
 activate OrcDAO
+
+OrcDAO -> DB: getConnection()
+activate DB
+DB --> OrcDAO: connection
+deactivate DB
+
+OrcDAO -> ProdDAO: salvarProdutosDoOrcamento(orcamento)
+activate ProdDAO
+ProdDAO -> DB: getConnection()
+activate DB
+DB --> ProdDAO: connection
+deactivate DB
+ProdDAO --> OrcDAO: sucesso
+deactivate ProdDAO
+
 OrcDAO --> Service: orcamento (com ID definido)
 deactivate OrcDAO
 
-Service --> Orc: Orçamento criado com sucesso
+Service --> Vendedor: Orçamento criado com sucesso
 deactivate Service
-Orc --> Vendedor: Sucesso
-deactivate Orc
 @enduml
