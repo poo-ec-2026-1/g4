@@ -1,0 +1,27 @@
+@startuml
+actor Vendedor
+
+participant "Cliente" as Cli
+participant "SistemaService" as Service
+participant "ClienteDAO" as CliDAO
+
+Vendedor -> Cli: new Cliente(nome, documento, telefone, email, endereco)
+activate Cli
+Cli -> Service: cadastrarCliente(cliente)
+activate Service
+
+Service -> CliDAO: existeDocumento(documento)
+activate CliDAO
+CliDAO --> Service: false (documento inédito)
+deactivate CliDAO
+
+Service -> CliDAO: salvar(cliente)
+activate CliDAO
+CliDAO --> Service: cliente (com ID definido)
+deactivate CliDAO
+
+Service --> Cli: Cliente cadastrado
+deactivate Service
+Cli --> Vendedor: Sucesso
+deactivate Cli
+@enduml
