@@ -107,7 +107,7 @@ As principais tarefas realizadas foram:
 
 **Revisão dos diagramas UML:** atualização dos diagramas para refletir a arquitetura final do sistema e os principais fluxos implementados.
 
-## Seção 5 - Modelagem inicial
+## Seção 5 - Modelagem
 
 Os diagramas UML foram utilizados para representar visualmente a estrutura e o comportamento do sistema. 
 **OBS:** As imagens dos diagramas vão estar disponíveis neste README, enquanto os códigos que refletem exatamente a mesma imagem estará no repositório específico e organizado como "Diagramas/Diagramas Etapa 2", assim como as descrições de casos de uso completas.
