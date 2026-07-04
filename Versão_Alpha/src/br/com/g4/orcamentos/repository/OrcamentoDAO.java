@@ -22,25 +22,28 @@ public class OrcamentoDAO {
 
     public Orcamento salvar(Orcamento orcamento) {
         String sql = "INSERT INTO orcamentos (cliente_id, vendedor_id, status, criado_em) VALUES (?, ?, ?, ?)";
-        try {
-            Connection c = Database.getConnection();
-            PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             
             ps.setInt(1, orcamento.getCliente().getId());
             ps.setInt(2, orcamento.getVendedor().getId());
             ps.setString(3, orcamento.getStatus().name());
             ps.setString(4, orcamento.getCriadoEm().toString());
             ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
-            if (rs.next()) {
-                orcamento.setId(rs.getInt(1));
+            
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    orcamento.setId(rs.getInt(1));
+                }
             }
-            rs.close();
-            ps.close();
+            
             for (Produto produto : orcamento.getProdutos()) {
                 vincularProduto(c, orcamento.getId(), produto.getId());
             }
-            c.close();
+            
             return orcamento;
+            
         } catch (Exception ex) {
             throw new IllegalStateException("Nao foi possivel salvar orcamento: " + ex.getMessage(), ex);
         }
@@ -48,76 +51,77 @@ public class OrcamentoDAO {
 
     public List<Orcamento> listar() {
         List<Orcamento> orcamentos = new ArrayList<Orcamento>();
-        try {
-            Connection c = Database.getConnection();
-            PreparedStatement ps = c.prepareStatement("SELECT * FROM orcamentos ORDER BY id DESC");
-            ResultSet rs = ps.executeQuery();
+        
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement("SELECT * FROM orcamentos ORDER BY id DESC");
+             ResultSet rs = ps.executeQuery()) {
+             
             while (rs.next()) {
                 Orcamento orcamento = mapear(rs);
                 orcamento.setProdutos(listarProdutos(c, orcamento.getId()));
                 orcamentos.add(orcamento);
             }
-            rs.close();
-            ps.close();
-            c.close();
-            return orcamentos;
+            
         } catch (Exception ex) {
             throw new IllegalStateException("Nao foi possivel listar orcamentos: " + ex.getMessage(), ex);
         }
+        
+        return orcamentos;
     }
 
     public void atualizarStatus(int id, StatusOrcamento status) {
-        try {
-            Connection c = Database.getConnection();
-            PreparedStatement ps = c.prepareStatement("UPDATE orcamentos SET status = ? WHERE id = ?");
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement("UPDATE orcamentos SET status = ? WHERE id = ?")) {
+             
             ps.setString(1, status.name());
             ps.setInt(2, id);
             ps.executeUpdate();
-            ps.close();
-            c.close();
+            
         } catch (Exception ex) {
             throw new IllegalStateException("Nao foi possivel atualizar status: " + ex.getMessage(), ex);
         }
     }
 
     public void excluir(int id) {
-        try {
-            Connection c = Database.getConnection();
-            PreparedStatement limpar = c.prepareStatement("DELETE FROM orcamento_produtos WHERE orcamento_id = ?");
+        try (Connection c = Database.getConnection();
+             PreparedStatement limpar = c.prepareStatement("DELETE FROM orcamento_produtos WHERE orcamento_id = ?");
+             PreparedStatement ps = c.prepareStatement("DELETE FROM orcamentos WHERE id = ?")) {
+             
             limpar.setInt(1, id);
             limpar.executeUpdate();
-            limpar.close();
-            PreparedStatement ps = c.prepareStatement("DELETE FROM orcamentos WHERE id = ?");
+            
             ps.setInt(1, id);
             ps.executeUpdate();
-            ps.close();
-            c.close();
+            
         } catch (Exception ex) {
             throw new IllegalStateException("Nao foi possivel excluir orcamento: " + ex.getMessage(), ex);
         }
     }
 
     private void vincularProduto(Connection c, int orcamentoId, int produtoId) throws Exception {
-        PreparedStatement ps = c.prepareStatement("INSERT OR IGNORE INTO orcamento_produtos (orcamento_id, produto_id) VALUES (?, ?)");
-        ps.setInt(1, orcamentoId);
-        ps.setInt(2, produtoId);
-        ps.executeUpdate();
-        ps.close();
+        try (PreparedStatement ps = c.prepareStatement("INSERT OR IGNORE INTO orcamento_produtos (orcamento_id, produto_id) VALUES (?, ?)")) {
+            ps.setInt(1, orcamentoId);
+            ps.setInt(2, produtoId);
+            ps.executeUpdate();
+        }
     }
 
     private List<Produto> listarProdutos(Connection c, int orcamentoId) throws Exception {
         List<Produto> produtos = new ArrayList<Produto>();
-        PreparedStatement ps = c.prepareStatement("SELECT produto_id FROM orcamento_produtos WHERE orcamento_id = ?");
-        ps.setInt(1, orcamentoId);
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            Produto produto = produtoDAO.buscarPorId(rs.getInt("produto_id"));
-            if (produto != null) {
-                produtos.add(produto);
+        
+        try (PreparedStatement ps = c.prepareStatement("SELECT produto_id FROM orcamento_produtos WHERE orcamento_id = ?")) {
+            ps.setInt(1, orcamentoId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Produto produto = produtoDAO.buscarPorId(rs.getInt("produto_id"));
+                    if (produto != null) {
+                        produtos.add(produto);
+                    }
+                }
             }
         }
-        rs.close();
-        ps.close();
+        
         return produtos;
     }
 

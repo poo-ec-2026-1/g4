@@ -13,11 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProdutoDAO {
+
     public Produto salvar(Produto produto) {
         String sql = "INSERT INTO produtos (categoria, largura, altura, material, tipo, cor, tecido, preco_m2) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try {
-            Connection c = Database.getConnection();
-            PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+             
             ps.setString(1, produto.getCategoria());
             ps.setDouble(2, produto.getLargura());
             ps.setDouble(3, produto.getAltura());
@@ -27,14 +29,15 @@ public class ProdutoDAO {
             ps.setString(7, produto.getTecido());
             ps.setDouble(8, produto.getPrecoM2());
             ps.executeUpdate();
-            ResultSet rs = ps.getGeneratedKeys();
-            if (rs.next()) {
-                produto.setId(rs.getInt(1));
+            
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    produto.setId(rs.getInt(1));
+                }
             }
-            rs.close();
-            ps.close();
-            c.close();
+            
             return produto;
+            
         } catch (Exception ex) {
             throw new IllegalStateException("Nao foi possivel salvar produto: " + ex.getMessage(), ex);
         }
@@ -42,46 +45,45 @@ public class ProdutoDAO {
 
     public List<Produto> listar() {
         List<Produto> produtos = new ArrayList<Produto>();
-        try {
-            Connection c = Database.getConnection();
-            PreparedStatement ps = c.prepareStatement("SELECT * FROM produtos ORDER BY id DESC");
-            ResultSet rs = ps.executeQuery();
+        
+        // Este já estava correto no seu código!
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement("SELECT * FROM produtos ORDER BY id DESC");
+             ResultSet rs = ps.executeQuery()) {
+             
             while (rs.next()) {
                 produtos.add(mapear(rs));
             }
-            rs.close();
-            ps.close();
-            c.close();
-            return produtos;
+            
         } catch (Exception ex) {
             throw new IllegalStateException("Nao foi possivel listar produtos: " + ex.getMessage(), ex);
         }
+        
+        return produtos;
     }
 
     public Produto buscarPorId(int id) {
-        try {
-            Connection c = Database.getConnection();
-            PreparedStatement ps = c.prepareStatement("SELECT * FROM produtos WHERE id = ?");
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement("SELECT * FROM produtos WHERE id = ?")) {
+             
             ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
-            Produto produto = rs.next() ? mapear(rs) : null;
-            rs.close();
-            ps.close();
-            c.close();
-            return produto;
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? mapear(rs) : null;
+            }
+            
         } catch (Exception ex) {
             throw new IllegalStateException("Nao foi possivel buscar produto: " + ex.getMessage(), ex);
         }
     }
 
     public void excluir(int id) {
-        try {
-            Connection c = Database.getConnection();
-            PreparedStatement ps = c.prepareStatement("DELETE FROM produtos WHERE id = ?");
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement("DELETE FROM produtos WHERE id = ?")) {
+             
             ps.setInt(1, id);
             ps.executeUpdate();
-            ps.close();
-            c.close();
+            
         } catch (Exception ex) {
             throw new IllegalStateException("Nao foi possivel excluir produto: " + ex.getMessage(), ex);
         }
