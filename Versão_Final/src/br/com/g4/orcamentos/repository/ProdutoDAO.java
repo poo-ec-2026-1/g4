@@ -46,7 +46,6 @@ public class ProdutoDAO {
     public List<Produto> listar() {
         List<Produto> produtos = new ArrayList<Produto>();
         
-        // Este já estava correto no seu código!
         try (Connection c = Database.getConnection();
              PreparedStatement ps = c.prepareStatement("SELECT * FROM produtos ORDER BY id DESC");
              ResultSet rs = ps.executeQuery()) {
