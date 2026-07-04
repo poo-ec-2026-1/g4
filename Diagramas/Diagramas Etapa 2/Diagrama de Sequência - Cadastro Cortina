@@ -1,0 +1,17 @@
+@startuml Sequencia_Cadastrar_Cortina
+actor Vendedor
+
+participant "Cortina" as Crt
+participant "Produto" as Prod
+
+Vendedor -> Crt: new Cortina(largura, altura, material, tipo, cor)
+activate Crt
+
+Crt -> Prod: calcularPreco()
+activate Prod
+Prod --> Crt: precoCalculado
+deactivate Prod
+
+Crt --> Vendedor: Objeto Cortina instanciado
+deactivate Crt
+@enduml
