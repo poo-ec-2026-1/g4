@@ -1,0 +1,22 @@
+@startuml
+actor Vendedor as "Ator: Usuário"
+
+participant "Vendedor" as Vend
+participant "SistemaService" as Service
+participant "VendedorDAO" as VendDAO
+
+Vendedor -> Vend: new Vendedor(nome, telefone, email, percentualComissao)
+activate Vend
+Vend -> Service: cadastrarVendedor(vendedor)
+activate Service
+
+Service -> VendDAO: salvar(vendedor)
+activate VendDAO
+VendDAO --> Service: vendedor (com ID definido)
+deactivate VendDAO
+
+Service --> Vend: Vendedor cadastrado
+deactivate Service
+Vend --> Vendedor: Sucesso
+deactivate Vend
+@enduml
