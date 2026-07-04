@@ -44,7 +44,7 @@
 | **Pré-condições** | O vendedor selecionado deve existir no sistema. |
 | **Pós-condições** | O registro do vendedor é excluído da tabela `vendedores` do banco de dados SQLite. |
 | **Fluxo Principal** | 1. O operador visualiza a lista de vendedores cadastrados.<br>2. O operador seleciona o vendedor que deseja remover.<br>3. O operador aciona o comando para excluir o registro.<br>4. O sistema executa o método `excluir(id)` na `VendedorDAO`.<br>5. O sistema atualiza a interface e exibe uma mensagem de sucesso confirmando a remoção do colaborador. |
-| **Alternativas** | **4a. Vendedor vinculado a orçamentos existentes:**<br>1. O sistema cancela a exclusão e exibe um alerta informando que o vendedor possui orçamentos ativos e não pode ser apagado. |
+| **Alternativas** | **4a. Vendedor vinculado a orçamentos ativos:**<br>1. O sistema cancela a exclusão e exibe um alerta informando que o vendedor possui orçamentos ativos e não pode ser apagado. |
 
 ### 05 – Cadastrar Toldo
 
@@ -58,19 +58,7 @@
 | **Fluxo Principal** | 1. O vendedor solicita a inclusão de um novo Toldo.<br>2. O sistema exibe o formulário requisitando os dados (Largura, Altura, Material, Tipo e Cor).<br>3. O vendedor preenche as informações e confirma.<br>4. O sistema instancia o objeto `Toldo` e executa a validação das dimensões e valores.<br>5. O sistema exibe uma mensagem de sucesso. |
 | **Alternativas** | **4a. Dimensões ou valores negativos/zerados:**<br>1. O sistema identifica alguma informação inserida menor ou igual a zero.<br>2. O sistema interrompe o fluxo, lança um alerta de validação na interface e impede a persistência até que os valores sejam corrigidos. |
 
-### 06 – Excluir Toldo
-
-| Campo | Descrição |
-| :--- | :--- |
-| **Nome** | excluirToldo |
-| **Ator Principal** | Vendedor |
-| **Descrição** | O vendedor remove um produto do tipo Toldo permanentemente do catálogo do sistema. |
-| **Pré-condições** | O toldo selecionado deve existir no sistema e o vendedor deve estar na tela de listagem de produtos. |
-| **Pós-condições** | Os registros associados ao toldo são removidos das tabelas `toldos` e `produtos` no banco SQLite. |
-| **Fluxo Principal** | 1. O vendedor visualiza a lista de produtos cadastrados.<br>2. O vendedor seleciona o Toldo que deseja remover.<br>3. O vendedor aciona o comando para excluir o produto.<br>4. O sistema processa o comando chamando o método `excluir(id)` na `ToldoDAO`.<br>5. A DAO estabelece a conexão e remove primeiro o registro da tabela filha `toldos` e, em seguida, remove a linha correspondente da tabela pai `produtos`.<br>6. O sistema atualiza a listagem na interface e exibe uma mensagem de sucesso. |
-| **Alternativas** | **4a. Toldo vinculado a orçamentos ativos:**<br>1. O sistema interrompe a exclusão e exibe um alerta informando que o produto faz parte de orçamentos ativos e não pode ser deletado. |
-
-### 07 – Cadastrar Cortina
+### 06 – Cadastrar Cortina
 
 | Campo | Descrição |
 | :--- | :--- |
@@ -82,19 +70,19 @@
 | **Fluxo Principal** | 1. O vendedor solicita a inclusão de uma nova Cortina.<br>2. O sistema exibe o formulário requisitando os dados (Largura, Altura e Tecido).<br>3. O vendedor preenche as informações e confirma.<br>4. O sistema instancia o objeto `Cortina` e executa a validação das dimensões e valores.<br>5. O sistema exibe uma mensagem de sucesso. |
 | **Alternativas** | **4a. Dimensões ou valores negativos/zerados:**<br>1. O sistema identifica alguma informação inserida menor ou igual a zero.<br>2. O sistema interrompe o fluxo, lança um alerta de validação na interface e impede a persistência até que os valores sejam corrigidos. |
 
-### 08 – Excluir Cortina
+### 07 – Excluir Produto
 
 | Campo | Descrição |
 | :--- | :--- |
-| **Nome** | excluirCortina |
+| **Nome** | excluirProduto |
 | **Ator Principal** | Vendedor |
-| **Descrição** | O vendedor remove um produto do tipo Cortina permanentemente do catálogo do sistema. |
-| **Pré-condições** | A cortina selecionada deve existir no sistema e o vendedor deve estar na tela de listagem de produtos. |
-| **Pós-condições** | Os registros associados a cortina são removidos das tabelas `cortinas` e `produtos` no banco SQLite. |
-| **Fluxo Principal** | 1. O vendedor visualiza a lista de produtos cadastrados.<br>2. O vendedor seleciona a Cortina que deseja remover.<br>3. O vendedor aciona o comando para excluir o produto.<br>4. O sistema processa o comando chamando o método `excluir(id)` na `CortinaDAO`.<br>5. A DAO estabelece a conexão e remove primeiro o registro da tabela filha `cortinas` e, em seguida, remove a linha correspondente da tabela pai `produtos`.<br>6. O sistema atualiza a listagem na interface e exibe uma mensagem de sucesso. |
-| **Alternativas** | **4a. Cortina vinculado a orçamentos ativos:**<br>1. O sistema interrompe a exclusão e exibe um alerta informando que o produto faz parte de orçamentos ativos e não pode ser deletado. |
+| **Descrição** | O vendedor remove um produto (seja ele Toldo ou Cortina) permanentemente do sistema. |
+| **Pré-condições** | O vendedor deve estar logado no sistema e o produto selecionado deve existir na lista. |
+| **Pós-condições** | O produto é apagado do catálogo do sistema e suas informações são removidas de forma definitiva. |
+| **Fluxo Principal** | 1. O vendedor visualiza a lista de produtos cadastrados.<br>2. O vendedor seleciona o produto (Toldo ou Cortina) que deseja remover.<br>3. O vendedor aciona o comando para excluir o produto.<br>4. O sistema identifica o tipo de produto e apaga seus dados específicos e gerais do banco de dados.<br>5. O sistema atualiza a lista na tela e exibe uma mensagem confirmando a remoção com sucesso. |
+| **Alternativas** | **4a. Produto vinculado a orçamentos existentes:**<br>1. O sistema identifica que o produto faz parte do histórico de algum orçamento ativo.<br>2. O sistema impede a exclusão para não estragar o histórico dos orçamentos e mostra um alerta avisando que o produto não pode ser deletado. |
 
-### 09 – Criar Orçamento
+### 08 – Criar Orçamento
 
 | Campo | Descrição |
 | :--- | :--- |
@@ -106,7 +94,7 @@
 | **Fluxo Principal** | 1. O vendedor inicia a criação de um novo orçamento.<br>2. O vendedor seleciona o cliente e o vendedor responsável pela venda.<br>3. O vendedor escolhe os produtos desejados e os adiciona ao orçamento.<br>4. O vendedor clica no botão para salvar o orçamento.<br>5. O sistema processa e grava os dados do orçamento e de todos os produtos vinculados no banco de dados.<br>6. O sistema atualiza a tela e exibe uma mensagem de sucesso para o vendedor. |
 | **Alternativas** | **4a. Orçamento sem nenhum produto adicionado:**<br>1. O sistema verifica que a lista de itens está vazia.<br>2. O fluxo é interrompido antes de acessar o banco de dados, e um alerta é exibido notificando que é obrigatório incluir pelo menos um produto. |
 
-### 10 – Atualizar Status do Orçamento
+### 09 – Atualizar Status do Orçamento
 
 | Campo | Descrição |
 | :--- | :--- |
@@ -117,3 +105,15 @@
 | **Pós-condições** | O novo status do orçamento é salvo com sucesso e atualizado no histórico do sistema. |
 | **Fluxo Principal** | 1. O vendedor localiza e seleciona o orçamento desejado.<br>2. O vendedor escolhe a nova situação do orçamento (ex: Aprovado, Recusado, Cancelado, Em Analise).<br>3. O vendedor confirma a alteração do status.<br>4. O sistema modifica o status no orçamento em memória.<br>5. O sistema grava o novo status do orçamento diretamente no banco de dados usando o ID do registro.<br>6. O sistema exibe uma mensagem na tela confirmando que o status foi atualizado. |
 | **Alternativas** | **4a. Erro ao salvar a atualização:**<br>1. O sistema interrompe o processo, mantém o status antigo e exibe uma mensagem avisando o vendedor que não foi possível salvar a alteração. |
+
+### 10 – Excluir Orçamento
+
+| Campo | Descrição |
+| :--- | :--- |
+| **Nome** | excluirOrcamento |
+| **Ator Principal** | Vendedor |
+| **Descrição** | O vendedor remove permanentemente um orçamento do histórico do sistema. |
+| **Pré-condições** | O vendedor deve estar logado no sistema e o orçamento escolhido deve existir na lista. |
+| **Pós-condições** | O orçamento e todo o seu vínculo de produtos são apagados do banco de dados de forma definitiva. |
+| **Fluxo Principal** | 1. O vendedor visualiza a lista de orçamentos salvos.<br>2. O vendedor seleciona o orçamento que deseja remover.<br>3. O vendedor aciona o comando para excluir o registro.<br>4. O sistema processa o pedido e apaga primeiro a lista de produtos atrelados àquele orçamento.<br>5. O sistema remove o registro principal do orçamento do banco de dados.<br>6. O sistema atualiza a tela e mostra uma mensagem confirmando a exclusão. |
+| **Alternativas** | **4a. Erro:**<br>1. O sistema cancela a operação no meio do caminho para evitar que fiquem dados perdidos ou desorganizados.<br>2. O sistema exibe um alerta avisando que o orçamento não pôde ser excluído. |
