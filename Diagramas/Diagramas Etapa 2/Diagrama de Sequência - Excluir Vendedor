@@ -1,0 +1,23 @@
+@startuml Sequencia_Excluir_Vendedor
+actor Vendedor
+
+participant "SistemaService" as Service
+participant "Vendedor" as Vend
+participant "VendedorDAO" as VendDAO
+
+Vendedor -> Service: excluirVendedor(vendedor)
+activate Service
+
+Service -> Vend: getId()
+activate Vend
+Vend --> Service: id
+deactivate Vend
+
+Service -> VendDAO: excluir(id)
+activate VendDAO
+VendDAO --> Service
+deactivate VendDAO
+
+Service --> Vendedor: Sucesso
+deactivate Service
+@enduml
