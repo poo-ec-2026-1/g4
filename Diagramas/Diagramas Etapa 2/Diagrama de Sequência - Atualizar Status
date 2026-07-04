@@ -1,0 +1,28 @@
+@startuml Sequencia_Atualizar_Status_Orcamento
+actor Vendedor
+
+participant "SistemaService" as Service
+participant "Orcamento" as Orc
+participant "OrcamentoDAO" as OrcDAO
+
+Vendedor -> Service: atualizarStatus(orcamento, status)
+activate Service
+
+Service -> Orc: alterarStatus(status)
+activate Orc
+Orc --> Service
+deactivate Orc
+
+Service -> Orc: getId()
+activate Orc
+Orc --> Service: id
+deactivate Orc
+
+Service -> OrcDAO: atualizarStatus(id, status)
+activate OrcDAO
+OrcDAO --> Service
+deactivate OrcDAO
+
+Service --> Vendedor: Sucesso
+deactivate Service
+@enduml
