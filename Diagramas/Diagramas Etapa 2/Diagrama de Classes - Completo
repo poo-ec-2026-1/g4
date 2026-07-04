@@ -22,12 +22,17 @@ package "Dominio" {
     + {abstract} valorMetroQ(): double
     + getArea(): double
     + calcularPreco(): double
-    + getResumo(): String
     + getId(): Integer
     + setId(id: Integer): void
     + getLargura(): double
     + getAltura(): double
     + getPrecoM2(): double
+    + getResumo(): String
+    + getMaterial(): String
+    + getTipo(): String
+    + getCor(): String
+    + getTecido(): String
+    + toString(): String
   }
 
   class Toldo {
@@ -40,6 +45,9 @@ package "Dominio" {
     - calcularValorMetro(): double
     - valorPorMaterial(valor: String): double
     - valorPorTipo(valor: String): double
+    + getMaterial(): String
+    + getTipo(): String
+    + getCor(): String
   }
 
   class Cortina {
@@ -66,7 +74,16 @@ package "Dominio" {
     + getId(): Integer
     + setId(id: Integer): void
     + getNome(): String
+    + setNome(nome: String): void
     + getDocumento(): String
+    + setDocumento(documento: String): void
+    + getTelefone(): String
+    + setTelefone(telefone: String): void
+    + getEmail(): String
+    + setEmail(email: String): void
+    + getEndereco(): String
+    + setEndereco(endereco: String): void
+    + toString(): String
   }
 
   class Vendedor {
@@ -83,6 +100,10 @@ package "Dominio" {
     + getId(): Integer
     + setId(id: Integer): void
     + getNome(): String
+    + getTelefone(): String
+    + getEmail(): String
+    + getPercentualComissao(): double
+    + toString(): String
   }
 
   class Orcamento {
@@ -96,11 +117,23 @@ package "Dominio" {
     + Orcamento(id: Integer, cliente: Cliente, vendedor: Vendedor, status: StatusOrcamento, criadoEm: LocalDateTime)
     + addProduto(produto: Produto): void
     + removerProduto(produto: Produto): void
-    + alterarStatus(novoStatus: StatusOrcamento): void
     + calcularTotal(): double
-    + getComissaoVendedor(): double
+    + aprovar(): void
+    + recusar(): void
+    + cancelar(): void
+    + reabrirAnalise(): void
+    + alterarStatus(novoStatus: StatusOrcamento): void
     + getId(): Integer
+    + setId(id: Integer): void
+    + getCliente(): Cliente
+    + getVendedor(): Vendedor
+    + getProdutos(): List<Produto>
+    + setProdutos(produtos: List<Produto>): void
     + getStatus(): StatusOrcamento
+    + getCriadoEm(): LocalDateTime
+    + getTotalProdutos(): int
+    + getComissaoVendedor(): double
+    + toString(): String
   }
 
   enum StatusOrcamento {
@@ -112,12 +145,15 @@ package "Dominio" {
 
   Toldo --|> Produto
   Cortina --|> Produto
+
   Cliente ..|> Interfaces::Validavel
   Vendedor ..|> Interfaces::Validavel
+
   Orcamento --> Cliente
   Orcamento --> Vendedor
   Orcamento "1" *-- "*" Produto
   Orcamento --> StatusOrcamento
+  Vendedor --> Orcamento : cria
 }
 
 package "Repositorios" {
@@ -140,6 +176,7 @@ package "Repositorios" {
 
   class ProdutoDAO {
     + salvar(produto: Produto): Produto
+    + listar(): List<Produto>
     + buscarPorId(id: int): Produto
     + excluir(id: int): void
     - mapear(rs: ResultSet): Produto
@@ -150,8 +187,9 @@ package "Repositorios" {
     - vendedorDAO: VendedorDAO
     - produtoDAO: ProdutoDAO
     + salvar(orcamento: Orcamento): Orcamento
-    + atualizarStatus(id: int, status: StatusOrcamento): void
     + listar(): List<Orcamento>
+    + atualizarStatus(id: int, status: StatusOrcamento): void
+    + excluir(id: int): void
     - vincularProduto(c: Connection, orcamentoId: int, produtoId: int): void
     - listarProdutos(c: Connection, orcamentoId: int): List<Produto>
     - mapear(rs: ResultSet): Orcamento
@@ -160,7 +198,15 @@ package "Repositorios" {
   ClienteDAO --> Dominio::Cliente
   VendedorDAO --> Dominio::Vendedor
   ProdutoDAO --> Dominio::Produto
+  ProdutoDAO --> Dominio::Toldo
+  ProdutoDAO --> Dominio::Cortina
+
   OrcamentoDAO --> Dominio::Orcamento
+  OrcamentoDAO --> Dominio::Cliente
+  OrcamentoDAO --> Dominio::Vendedor
+  OrcamentoDAO --> Dominio::Produto
+  OrcamentoDAO --> Dominio::StatusOrcamento
+
   OrcamentoDAO --> ClienteDAO
   OrcamentoDAO --> VendedorDAO
   OrcamentoDAO --> ProdutoDAO
@@ -170,6 +216,7 @@ package "Gerenciamento" {
   class Database {
     - {static} DB_DIR: String
     - {static} URL: String
+    - Database()
     + {static} getConnection(): Connection
     + {static} inicializar(): void
     - {static} executarSchema(): void
@@ -182,37 +229,62 @@ package "Gerenciamento" {
     - orcamentoDAO: OrcamentoDAO
     + cadastrarCliente(nome: String, documento: String, telefone: String, email: String, endereco: String): Cliente
     + cadastrarVendedor(nome: String, telefone: String, email: String, percentualComissao: double): Vendedor
-    + criarOrcamento(vendedor: Vendedor, cliente: Cliente, produtos: List<Produto>): Orcamento
+    + cadastrarToldo(largura: double, altura: double, material: String, tipo: String, cor: String): Produto
+    + cadastrarCortina(largura: double, altura: double, tecido: String): Produto
+    + criarOrcamento(cliente: Cliente, vendedor: Vendedor, produtos: List<Produto>): Orcamento
     + atualizarStatus(orcamento: Orcamento, status: StatusOrcamento): void
     + listarClientes(): List<Cliente>
     + listarVendedores(): List<Vendedor>
+    + listarProdutos(): List<Produto>
     + listarOrcamentos(): List<Orcamento>
     + excluirCliente(cliente: Cliente): void
     + excluirVendedor(vendedor: Vendedor): void
+    + excluirProduto(produto: Produto): void
+    + excluirOrcamento(orcamento: Orcamento): void
   }
 
   class MainApp {
+    - service: SistemaService
+    - clientes: ObservableList<Cliente>
+    - vendedores: ObservableList<Vendedor>
+    - produtos: ObservableList<Produto>
+    - orcamentos: ObservableList<Orcamento>
     + start(stage: Stage): void
-    + main(args: String[]): void
+    - criarAbaClientes(): Tab
+    - criarAbaVendedores(): Tab
+    - criarAbaProdutos(): Tab
+    - criarAbaOrcamentos(): Tab
+    - carregarDados(): void
     - executar(sucesso: String, acao: Acao): void
+    - alerta(tipo: AlertType, titulo: String, mensagem: String): void
+    + {static} main(args: String[]): void
+  }
+
+  interface Acao {
+    + executar(): void
   }
 
   SistemaService --> Repositorios::ClienteDAO
   SistemaService --> Repositorios::VendedorDAO
   SistemaService --> Repositorios::ProdutoDAO
   SistemaService --> Repositorios::OrcamentoDAO
+
   SistemaService --> Dominio::Cliente
   SistemaService --> Dominio::Vendedor
+  SistemaService --> Dominio::Produto
+  SistemaService --> Dominio::Toldo
+  SistemaService --> Dominio::Cortina
   SistemaService --> Dominio::Orcamento
   SistemaService --> Dominio::StatusOrcamento
 
   MainApp --> SistemaService
-  MainApp --> Gerenciamento::Database
+  MainApp --> Database
+  MainApp --> Acao
 
-  Repositorios::ClienteDAO --> Gerenciamento::Database
-  Repositorios::VendedorDAO --> Gerenciamento::Database
-  Repositorios::ProdutoDAO --> Gerenciamento::Database
-  Repositorios::OrcamentoDAO --> Gerenciamento::Database
+  Repositorios::ClienteDAO --> Database
+  Repositorios::VendedorDAO --> Database
+  Repositorios::ProdutoDAO --> Database
+  Repositorios::OrcamentoDAO --> Database
 }
 
 @enduml
