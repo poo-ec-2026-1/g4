@@ -146,7 +146,7 @@ Os diagramas de sequência detalham os principais fluxos de execução do sistem
 ### Criar Orçamento
 <img width="1125" height="532" alt="DiagramaDeSequencia-CriarOrcamento" src="https://github.com/user-attachments/assets/8d428a78-2394-4328-ad6a-4c00d61356f5" />
 
-#### Atualizar Status Orçamento
+### Atualizar Status Orçamento
 <img width="646" height="385" alt="DiagramaDeSequencia-AtualizarStatus" src="https://github.com/user-attachments/assets/1f03c6ea-d751-4f7a-8087-2de81273d8df" />
 
 ### Excluir Orçamento
@@ -159,9 +159,6 @@ O diagrama de caso de uso específico apresenta as funcionalidades disponíveis 
 
 <img width="2019" height="222" alt="DiagramaEspecificoCasoDeUso" src="https://github.com/user-attachments/assets/156e46bd-bcff-44b6-ac6e-f7ded3895ede" />
 
-#### Cadastrar Cliente
-OBS: Lembrando que as descrições de casos de uso completas está no repositório específico e organizado como "Diagramas/Diagramas Etapa 2", segue apenas um exemplo de como está estruturado.
-
 ### 01 – Cadastrar Cliente
 
 | Campo | Descrição |
@@ -173,6 +170,8 @@ OBS: Lembrando que as descrições de casos de uso completas está no repositór
 | **Pós-condições** | O cliente é registrado com sucesso no banco de dados e recebe um ID único. |
 | **Fluxo Principal** | 1. O vendedor solicita a inclusão de um novo cliente.<br>2. O sistema exibe o formulário de cadastro requisitando os dados (Nome, Documento, Telefone, Email, Endereço).<br>3. O vendedor insere as informações obrigatórias e confirma.<br>4. O sistema valida a consistência dos dados inseridos.<br>5. O sistema persiste as informações no banco de dados através da `ClienteDAO`.<br>6. O sistema exibe uma mensagem confirmando o sucesso do cadastro. |
 | **Alternativas** | **4a. Dados obrigatórios em branco ou inválidos:**<br>1. O sistema identifica que campos obrigatórios não foram preenchidos ou estão incorretos.<br>2. O sistema exibe um alerta apontando os erros e impede o salvamento até a correção.<br><br>**4b. Cliente já cadastrado:**<br>1. O sistema consulta o banco de dados e identifica que já existe um cliente com o mesmo documento.<br>2. O sistema interrompe a operação, informa o vendedor sobre a duplicidade e retorna ao formulário. |
+
+OBS: Lembrando que as descrições de casos de uso completas está no repositório específico e organizado como "Diagramas/Diagramas Etapa 2", segue apenas um exemplo de como está estruturado.
 
 ## Seção 6 - Evolução entre Versões e Destaques
 
