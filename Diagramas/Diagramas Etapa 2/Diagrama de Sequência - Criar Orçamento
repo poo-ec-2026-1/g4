@@ -1,0 +1,23 @@
+@startuml Sequencia_Criar_Orçamento
+actor Vendedor
+
+participant "Orcamento" as Orc
+participant "SistemaService" as Service
+participant "OrcamentoDAO" as OrcDAO
+
+Vendedor -> Orc: new Orcamento(cliente, vendedor, produtos, descricao)
+activate Orc
+note over Orc : O construtor calcula o valor total\nsomando os preços de todos os produtos
+Orc -> Service: criarOrcamento(orcamento)
+activate Service
+
+Service -> OrcDAO: salvar(orcamento)
+activate OrcDAO
+OrcDAO --> Service: orcamento (com ID definido)
+deactivate OrcDAO
+
+Service --> Orc: Orçamento criado com sucesso
+deactivate Service
+Orc --> Vendedor: Sucesso
+deactivate Orc
+@enduml
