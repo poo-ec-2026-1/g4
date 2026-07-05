@@ -12,7 +12,8 @@ Em seguida, implementei toda a camada de persistência utilizando o padrão DAO,
 Por fim, desenvolvi a classe SistemaService, que centraliza toda a lógica de negócio da aplicação, funcionando como intermediária entre a interface JavaFX e os DAOs. Nessa camada foram implementadas regras como validação de documentos duplicados, criação de orçamentos, associação entre clientes, vendedores e produtos, atualização de status dos orçamentos e cálculo automático dos valores totais e comissões.
 
 Principais Commits realizados:
-Commit 1: Implementação da estrutura inicial do banco de dados e configuração da classe Database, responsável pela criação automática das tabelas e conexão com o SQLite.https://github.com/poo-ec-2026-1/g4/commit/868dd8387e0b70f2e82841df846efe1fd72e2695
+Commit 1: Implementação da estrutura inicial do banco de dados e configuração da classe Database, responsável pela criação automática das tabelas e conexão com o SQLite.
+https://github.com/poo-ec-2026-1/g4/commit/868dd8387e0b70f2e82841df846efe1fd72e2695
 
 Commit 2: Desenvolvimento das entidades do sistema (Cliente, Produto, Toldo, Cortina, Vendedor e Orcamento) e implementação da camada DAO para persistência dos dados.
 https://github.com/poo-ec-2026-1/g4/commit/449a36221f6e044c24a32e623db9ac5880f10b74
